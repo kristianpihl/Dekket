@@ -1,0 +1,98 @@
+@import 'bootstrap/dist/css/bootstrap.min.css';
+
+/* Color palette — placeholder, we'll design this properly once the skeleton works. */
+:root {
+  --color-primary: #1f6feb;
+  --color-primary-dark: #163e7a;
+  --color-text: #1c1c1e;
+  --color-muted: #6b7280;
+  --color-surface: #f7f8fa;
+  --color-border: #e5e7eb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+  color: var(--color-text);
+  background: #fff;
+}
+
+#root {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
+
+.page {
+  flex: 1;
+  max-width: 960px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 2rem 1.25rem;
+}
+
+/* Topbar */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.topbar-brand {
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: var(--color-primary-dark);
+  text-decoration: none;
+}
+
+.topbar-nav a {
+  margin-left: 1.25rem;
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.topbar-nav a:hover {
+  color: var(--color-primary);
+}
+
+/* Footer */
+.footer {
+  padding: 1.5rem;
+  text-align: center;
+  color: var(--color-muted);
+  font-size: 0.875rem;
+  border-top: 1px solid var(--color-border);
+}
+
+/* Home */
+.home {
+  text-align: center;
+  padding: 3rem 0;
+}
+
+.home-lead {
+  color: var(--color-muted);
+  max-width: 40ch;
+  margin: 1rem auto 2rem;
+}
+
+.home-cta {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background: var(--color-primary);
+  color: #fff;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.home-cta:hover {
+  background: var(--color-primary-dark);
+  color: #fff;
+}
