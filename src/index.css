@@ -96,3 +96,34 @@ body {
   background: var(--color-primary-dark);
   color: #fff;
 }
+
+/* Login / register */
+.auth-card {
+  max-width: 400px;
+  margin: 2rem auto;
+}
+
+.auth-switch {
+  margin-top: 1rem;
+  text-align: center;
+  color: var(--color-muted);
+}
+
+/* A <button> that looks like a text link */
+.link-button {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: var(--color-primary);
+  cursor: pointer;
+}
+
+.link-button:hover {
+  color: var(--color-primary-dark);
+  text-decoration: underline;
+}
+
+.topbar-nav .link-button {
+  margin-left: 1.25rem;
+}
