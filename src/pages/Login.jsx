@@ -13,7 +13,8 @@ function friendlyError(error) {
   if (msg.includes('already registered')) return 'Det finnes allerede en bruker med denne e-postadressen.'
   if (msg.includes('rate limit')) return 'For mange forsøk. Vent litt og prøv igjen.'
   if (msg.includes('at least')) return `Passordet må være minst ${MIN_PASSWORD_LENGTH} tegn.`
-  return 'Noe gikk galt. Prøv igjen.'
+  if (msg.includes('sending') && msg.includes('email')) return 'Kunne ikke sende bekreftelses-e-post akkurat nå. Prøv igjen senere.'
+  return `Noe gikk galt${msg ? `: ${msg}` : '.'}`
 }
 
 export default function Login() {
