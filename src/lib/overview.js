@@ -283,5 +283,9 @@ export function economySummary(policies, today = new Date(), { includeExpired = 
     expiredCount: allRows.length - counted.length,
     paidByOthers: policies.length - household.length,
     hasSpouseRows: allRows.some((r) => r.payer === 'spouse'),
+    // So the page can say WHICH policies are left out and why (instead of just a count):
+    // household policies that have expired (hidden unless `includeExpired`), and policies paid by someone else.
+    expiredRows: allRows.filter((r) => r.status === 'expired'),
+    otherPayerPolicies: policies.filter((p) => !HOUSEHOLD_PAYERS.includes(payerOf(p))),
   }
 }

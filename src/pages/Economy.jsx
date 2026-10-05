@@ -78,6 +78,27 @@ export default function Economy() {
             <AmountCard title="Husholdningen betaler" year={eco.household.year} month={eco.household.month} />
           </div>
 
+          {/* Expired policies are left out of the totals. Say which ones, so nothing seems to have vanished. */}
+          {!showExpired && eco.expiredRows.length > 0 && (
+            <Alert variant="warning" className="econ-expired-alert">
+              <strong>
+                {eco.expiredRows.length} {eco.expiredRows.length === 1 ? 'forsikring er' : 'forsikringer er'} utløpt og ikke
+                med i summene:
+              </strong>
+              <ul className="econ-excluded">
+                {eco.expiredRows.map(({ policy, payer }) => (
+                  <li key={policy.id}>
+                    {policy.title} ({payerLabel(payer)} betaler) gikk ut {formatDate(policy.valid_to)}.{' '}
+                    <Link to={`/forsikringer?rediger=${policy.id}`}>Er den fornyet? Oppdater datoen</Link>
+                  </li>
+                ))}
+              </ul>
+              <button type="button" className="link-button" onClick={() => setShowExpired(true)}>
+                Vis dem i tabellen
+              </button>
+            </Alert>
+          )}
+
           {eco.rows.length === 0 ? (
             <div className="card-box empty">
               <span className="icon-circle icon-circle--lg">
@@ -191,8 +212,15 @@ export default function Economy() {
             )}
             {eco.paidByOthers > 0 && (
               <li>
-                {eco.paidByOthers} {eco.paidByOthers === 1 ? 'forsikring betales' : 'forsikringer betales'} av jobben,
-                sameiet eller andre og er ikke med her.
+                Betales av andre enn deg og samboer/ektefelle, og er ikke med her:
+                <ul className="econ-excluded">
+                  {eco.otherPayerPolicies.map((p) => (
+                    <li key={p.id}>
+                      {p.title} ({payerLabel(p.payer)} betaler).{' '}
+                      <Link to={`/forsikringer?rediger=${p.id}`}>Feil? Endre «Hvem betaler?»</Link>
+                    </li>
+                  ))}
+                </ul>
               </li>
             )}
             {(eco.expiredCount > 0 || showExpired) && (
