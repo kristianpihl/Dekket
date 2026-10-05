@@ -6,6 +6,7 @@ export default function Footer() {
       <p>
         &copy; {new Date().getFullYear()} {site.name}
       </p>
+      <p>Dekket gir informasjon og oversikt, ikke forsikringsrådgivning.</p>
     </footer>
   )
 }

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Alert, Button, Form } from 'react-bootstrap'
-import { Navigate, useLocation } from 'react-router-dom'
+import { Navigate, useLocation, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../components/AuthProvider'
 
 const MIN_PASSWORD_LENGTH = 8
@@ -20,7 +20,9 @@ function friendlyError(error) {
 export default function Login() {
   const { user, signIn, signUp } = useAuth()
   const location = useLocation()
-  const [mode, setMode] = useState('login') // 'login' | 'register'
+  const [searchParams] = useSearchParams()
+  // /login?ny=1 (from the front page's "Kom i gang") opens the sign-up form.
+  const [mode, setMode] = useState(searchParams.get('ny') ? 'register' : 'login') // 'login' | 'register'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
@@ -73,6 +75,7 @@ export default function Login() {
   }
 
   return (
+    <div className="page">
     <section className="auth-card">
       <h1>{isRegister ? 'Opprett konto' : 'Logg inn'}</h1>
 
@@ -117,5 +120,6 @@ export default function Login() {
         </button>
       </p>
     </section>
+    </div>
   )
 }

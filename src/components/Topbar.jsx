@@ -12,6 +12,12 @@ export default function Topbar() {
         {site.name}
       </Link>
       <nav className="topbar-nav">
+        <Link to="/#slik-fungerer-det" className="topbar-anchor">
+          Slik fungerer det
+        </Link>
+        <Link to="/#pris" className="topbar-anchor">
+          Pris
+        </Link>
         {user ? (
           <>
             <Link to="/dashboard">Åpne appen</Link>
@@ -20,7 +26,14 @@ export default function Topbar() {
             </button>
           </>
         ) : (
-          !loading && <Link to="/login">Logg inn</Link>
+          !loading && (
+            <>
+              <Link to="/login">Logg inn</Link>
+              <Link to="/login?ny=1" className="cta cta--small">
+                Kom i gang
+              </Link>
+            </>
+          )
         )}
       </nav>
     </header>

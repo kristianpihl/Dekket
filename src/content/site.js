@@ -2,9 +2,9 @@
 
 export const site = {
   name: 'Dekket',
-  tagline: 'Er du egentlig dekket?',
+  tagline: 'Vit hva du er dekket for, før skaden skjer.',
   description:
-    'Last opp forsikringene dine, så hjelper Dekket deg å forstå hva du faktisk er dekket for — og hva som mangler.',
+    'Forsikringsoversikten som er på din side. Samle forsikringene dine, få dem forklart, og se hva som mangler.',
 }
 
 // The left-hand menu inside the app, top to bottom.
