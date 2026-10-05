@@ -40,9 +40,28 @@ export const AREA_LABEL = {
   none: 'Ikke lagt til',
 }
 
+// --- Missing documents (needs no AI) -------------------------------------------------------------
+// A policy is only fully described by its certificate (forsikringsbevis: your sums, period, price)
+// AND its terms (vilkår: what is covered). If the user has uploaded one of them for a type, point out the other.
+// We only judge a type when we KNOW what every file for it is: one "unknown" file and we say nothing.
+export function missingDocuments(policies) {
+  const result = []
+  for (const type of insuranceTypes.filter((t) => t.value !== 'other')) {
+    const items = policies.filter((p) => p.insurance_type === type.value && p.doc_kind !== 'bylaws' && p.doc_kind !== 'other')
+    if (items.length === 0 || items.some((p) => !p.doc_kind || p.doc_kind === 'unknown')) continue
+
+    const hasCertificate = items.some((p) => p.doc_kind === 'certificate' || p.doc_kind === 'both')
+    const hasTerms = items.some((p) => p.doc_kind === 'terms' || p.doc_kind === 'both')
+    if (hasTerms && !hasCertificate) result.push({ type: type.value, label: type.label, missing: 'certificate' })
+    if (hasCertificate && !hasTerms) result.push({ type: type.value, label: type.label, missing: 'terms' })
+  }
+  return result
+}
+
 // --- Coverage areas: one per insurance type (except "other") ---------------------------------
 
 export function buildAreas(policies, today = new Date()) {
+  const missing = missingDocuments(policies)
   return insuranceTypes
     .filter((t) => t.value !== 'other')
     .map((type) => {
@@ -65,7 +84,9 @@ export function buildAreas(policies, today = new Date()) {
       }[status]
 
       const note = [rep.insurer, detail].filter(Boolean).join(' · ') + (items.length > 1 ? ` (+${items.length - 1} til)` : '')
-      return { ...base, status, label: AREA_LABEL[status], note }
+      const gap = missing.find((m) => m.type === type.value)
+      const extra = gap ? (gap.missing === 'certificate' ? 'Mangler forsikringsbevis' : 'Mangler vilkår') : null
+      return { ...base, status, label: AREA_LABEL[status], note, extra }
     })
 }
 
@@ -116,6 +137,27 @@ export function buildTodos(policies, today = new Date()) {
       })
     })
 
+  missingDocuments(policies).forEach((m) => {
+    const area = m.label.toLowerCase()
+    todos.push(
+      m.missing === 'certificate'
+        ? {
+            id: `doc-certificate-${m.type}`,
+            icon: 'file-earmark-plus',
+            title: `Legg til forsikringsbeviset for ${area}`,
+            note: 'Vilkårene sier hva som kan dekkes, men det er beviset som viser hva du faktisk har.',
+            action: { label: 'Legg til', to: '/legg-til' },
+          }
+        : {
+            id: `doc-terms-${m.type}`,
+            icon: 'file-earmark-plus',
+            title: `Legg til vilkårene for ${area}`,
+            note: 'Beviset viser summer og pris, men vilkårene forklarer hva som er dekket og ikke.',
+            action: { label: 'Legg til', to: '/legg-til' },
+          },
+    )
+  })
+
   const noDate = policies.filter((p) => policyStatus(p, today) === 'no-date')
   if (noDate.length > 0) {
     todos.push({
@@ -132,7 +174,7 @@ export function buildTodos(policies, today = new Date()) {
 
 // How many things need the user's attention (used for the number at the top).
 export function attentionCount(policies, today = new Date()) {
-  return buildAreas(policies, today).filter((a) => ['soon', 'expired', 'no-date'].includes(a.status)).length
+  return buildAreas(policies, today).filter((a) => ['soon', 'expired', 'no-date'].includes(a.status) || a.extra).length
 }
 
 // --- Renewals: policies with an end date, soonest first --------------------------------------

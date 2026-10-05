@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import LegalPage, { Fill, LegalSection } from '../components/LegalPage'
 import { operator, priceText } from '../content/legal'
+import { features } from '../content/site'
 
 // Vilkår for bruk. DRAFT — must be reviewed by a lawyer (see src/content/legal.js).
 export default function Terms() {
@@ -54,8 +55,7 @@ export default function Terms() {
         <p>
           Oversikter, sammendrag, statuser, analyser og andre resultater i Dekket er veiledende.
           De kan være ufullstendige, utdaterte eller feil, for eksempel fordi dokumenter mangler,
-          har utløpt eller er lest feil. Deler av tjenesten kan bruke kunstig intelligens (KI),
-          som kan gjøre feil.
+          har utløpt eller er lest feil.{features.analysis && ' Deler av tjenesten bruker kunstig intelligens (KI), som kan gjøre feil.'}
         </p>
         <p>
           Vi gir ingen garanti for at informasjonen er riktig, fullstendig eller oppdatert, eller

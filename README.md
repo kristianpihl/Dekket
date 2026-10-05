@@ -33,11 +33,17 @@ npm run dev
   `overview.js` har alle beregningene bak dashboardet (status, frister, kostnader)
 - `src/routes.jsx` — alle sider/URL-er
 - `supabase/` — SQL som kjøres i Supabase SQL Editor, i denne rekkefølgen:
-  `documents.sql` → `account.sql` → `dashboard.sql` (alle kan kjøres flere ganger)
+  `documents.sql` → `account.sql` → `dashboard.sql` → `doc-kind.sql` (alle kan kjøres flere ganger).
+  `analysis.sql` trengs først når analysen skrus på
+
+**Funksjonsbrytere:** `features` i `src/content/site.js` skrur ferdigbygde funksjoner av/på.
+Analysen (`features.analysis`) er foreløpig AV.
 
 **Slik legger du til en ny side i appen:** lag filen i `src/pages/`, legg til en
 `<Route>` i `src/routes.jsx`, og en linje i `appNav` i `src/content/site.js`.
-- `api/` — Vercel serverless-funksjoner (backend-logikk, kommer senere)
+- `api/` — Vercel serverless-funksjoner. `analyze.js` analyserer et dokument med Claude (nøkkelen
+  `ANTHROPIC_API_KEY` ligger kun på serveren). `_analysis.js` har spørsmålet og svarformatet.
+  Lokalt kjører `npm run dev` de samme filene via en liten plugin i `vite.config.js`.
 
 ## Status
 

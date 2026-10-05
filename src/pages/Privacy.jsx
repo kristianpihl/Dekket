@@ -1,5 +1,6 @@
 import LegalPage, { Fill, LegalSection } from '../components/LegalPage'
 import { operator } from '../content/legal'
+import { features } from '../content/site'
 
 // Personvernerklæring. DRAFT — must be reviewed by a lawyer (see src/content/legal.js).
 // It must always describe what the app ACTUALLY does. Update it when we add a new provider
@@ -80,11 +81,14 @@ export default function Privacy() {
             <strong>Vercel:</strong> hosting av nettsiden. Behandler tekniske opplysninger som
             IP-adresse.
           </li>
-          <li>
-            <strong>[Når analysen lanseres: AI-leverandør]</strong> Innholdet i dokumentene du ber
-            om analyse av, sendes til en leverandør av KI-modeller for å lage analysen.
-            Leverandøren skal ikke bruke innholdet til å trene egne modeller.
-          </li>
+          {features.analysis && (
+            <li>
+              <strong>Anthropic (Claude):</strong> KI-modellen som leser dokumentene dine når du ber om
+              en analyse. Innholdet i dokumentet du velger sendes dit for å lage analysen, og bare da.
+              Vi sender aldri dokumenter dit uten at du selv har startet en analyse. Anthropic er et
+              amerikansk selskap.
+            </li>
+          )}
           <li>
             <strong>[Når betaling innføres: betalingsleverandør]</strong> Håndterer
             betalingsopplysningene dine. Vi lagrer ikke kortnummer selv.
@@ -119,7 +123,10 @@ export default function Privacy() {
           <li>få innsyn i opplysningene vi har om deg og få en kopi,</li>
           <li>få rettet feil, og få slettet opplysninger,</li>
           <li>begrense behandlingen eller protestere mot den,</li>
-          <li>få utlevert opplysningene dine i et maskinlesbart format (dataportabilitet),</li>
+          <li>
+            få utlevert opplysningene dine i et maskinlesbart format (dataportabilitet). Det kan du gjøre
+            selv med en gang under «Konto» → «Last ned dataene mine»,
+          </li>
           <li>trekke tilbake samtykke du har gitt.</li>
         </ul>
         <p>

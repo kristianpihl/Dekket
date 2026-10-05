@@ -4,6 +4,7 @@
 export const emptyValues = {
   title: '',
   type: 'home',
+  docKind: '', // must be chosen when adding
   insurer: '',
   holder: 'private',
   validFrom: '',
@@ -17,6 +18,7 @@ export function valuesFromPolicy(policy) {
   return {
     title: policy.title ?? '',
     type: policy.insurance_type ?? 'other',
+    docKind: policy.doc_kind ?? 'unknown',
     insurer: policy.insurer ?? '',
     holder: policy.holder ?? 'private',
     validFrom: policy.valid_from ?? '',
@@ -35,7 +37,8 @@ export function parseAmount(text) {
 }
 
 // Returns an error message, or '' when the values are fine.
-export function validateValues(v) {
+export function validateValues(v, { requireKind = false } = {}) {
+  if (requireKind && !v.docKind) return 'Velg hva slags dokument dette er.'
   if (v.premium.trim() !== '') {
     const amount = parseAmount(v.premium)
     if (amount === null || amount < 0) return 'Prisen må være et tall som ikke er negativt.'
@@ -52,6 +55,7 @@ export function toDbFields(v) {
   return {
     title: v.title.trim(),
     insurance_type: v.type,
+    doc_kind: v.docKind || 'unknown',
     insurer: v.insurer.trim() || null,
     holder: v.holder,
     valid_from: v.validFrom || null,

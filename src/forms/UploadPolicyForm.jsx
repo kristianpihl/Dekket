@@ -3,6 +3,7 @@ import { Alert, Button, Form } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../components/AuthProvider'
 import { LEGAL_VERSION } from '../content/legal'
+import { features } from '../content/site'
 import { formatBytes } from '../lib/format'
 import { POLICY_BUCKET } from '../lib/policyActions'
 import { emptyValues, toDbFields, validateValues } from '../lib/policyFields'
@@ -61,7 +62,7 @@ export default function UploadPolicyForm({ onUploaded }) {
 
   async function handleSubmit(e) {
     e.preventDefault()
-    const problem = validateValues(values)
+    const problem = validateValues(values, { requireKind: true })
     if (problem) {
       setError(problem)
       return
@@ -170,7 +171,7 @@ export default function UploadPolicyForm({ onUploaded }) {
             kan legge dem inn senere.
           </p>
 
-          <PolicyFields values={values} onChange={patch} idPrefix="add" />
+          <PolicyFields values={values} onChange={patch} idPrefix="add" kindRequired />
 
           <Form.Check
             id="policy-consent"
@@ -182,7 +183,7 @@ export default function UploadPolicyForm({ onUploaded }) {
             label={
               <>
                 Dokumentet kan inneholde personopplysninger, også om helse. Jeg samtykker til at Dekket
-                behandler innholdet for å lage oversikt og analyse for meg. Jeg kan trekke samtykket
+                behandler innholdet for å lage {features.analysis ? 'oversikt og analyse' : 'oversikt'} for meg. Jeg kan trekke samtykket
                 når som helst ved å slette dokumentet eller kontoen. Se{' '}
                 <Link to="/personvern" target="_blank">
                   personvernerklæringen

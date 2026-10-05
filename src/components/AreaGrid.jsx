@@ -24,6 +24,12 @@ export default function AreaGrid({ areas }) {
             </div>
             <div className="area-name">{area.name}</div>
             <div className="area-note">{area.note}</div>
+            {area.extra && (
+              <div className="area-extra">
+                <i className="bi bi-file-earmark-plus me-1" aria-hidden="true" />
+                {area.extra}
+              </div>
+            )}
           </>
         )
         const className = `card-box area${area.status === 'none' ? ' area--empty' : ''}`

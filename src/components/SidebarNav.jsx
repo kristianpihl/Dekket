@@ -1,5 +1,5 @@
 import { Link, NavLink } from 'react-router-dom'
-import { appNav, site } from '../content/site'
+import { appNav, features, site } from '../content/site'
 import { useAuth } from './AuthProvider'
 
 // The left-hand menu. Used both as the fixed desktop sidebar and inside the
@@ -14,7 +14,9 @@ export default function SidebarNav({ onNavigate }) {
       </Link>
 
       <nav className="sidebar-nav">
-        {appNav.map((item) => (
+        {appNav
+          .filter((item) => !item.feature || features[item.feature])
+          .map((item) => (
           <NavLink key={item.to} to={item.to} className="sidebar-link" onClick={onNavigate}>
             <i className={`bi bi-${item.icon}`} aria-hidden="true" />
             {item.label}

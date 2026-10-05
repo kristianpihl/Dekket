@@ -1,10 +1,10 @@
 import { Col, Form, InputGroup, Row } from 'react-bootstrap'
-import { holders, insuranceTypes } from '../content/insuranceTypes'
+import { docKinds, holders, insuranceTypes } from '../content/insuranceTypes'
 
 // The form fields that describe a policy. Used in the "add" flow and the "edit" dialog.
 // `values` is the form state (see lib/policyFields.js); `onChange(patch)` merges changes into it.
 // `idPrefix` keeps the field ids unique when two forms exist on the same page.
-export default function PolicyFields({ values, onChange, idPrefix = 'pf', titlePlaceholder }) {
+export default function PolicyFields({ values, onChange, idPrefix = 'pf', titlePlaceholder, kindRequired = false }) {
   const id = (name) => `${idPrefix}-${name}`
 
   return (
@@ -17,6 +17,27 @@ export default function PolicyFields({ values, onChange, idPrefix = 'pf', titleP
           value={values.title}
           onChange={(e) => onChange({ title: e.target.value })}
         />
+      </Form.Group>
+
+      <Form.Group className="mb-3" controlId={id('kind')}>
+        <Form.Label>Hva slags dokument er dette?</Form.Label>
+        <Form.Select
+          value={values.docKind}
+          required={kindRequired}
+          onChange={(e) => onChange({ docKind: e.target.value })}
+        >
+          {kindRequired ? (
+            <option value="">Velg …</option>
+          ) : (
+            <option value="unknown">Ikke oppgitt</option>
+          )}
+          {docKinds.map((k) => (
+            <option key={k.value} value={k.value}>
+              {k.label}
+            </option>
+          ))}
+        </Form.Select>
+        <Form.Text muted>Hjelper Dekket å se om det mangler noe, for eksempel forsikringsbeviset.</Form.Text>
       </Form.Group>
 
       <Row>

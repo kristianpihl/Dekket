@@ -29,3 +29,18 @@ export const holders = [
 export function holderLabel(value) {
   return holders.find((h) => h.value === value)?.label ?? 'Annet'
 }
+
+// What kind of document a file is. "unknown" = uploaded before this field existed.
+// Knowing this lets the dashboard point out missing documents (e.g. terms but no certificate).
+// `label` is the long text in the form's dropdown, `short` is used in tables and lists.
+export const docKinds = [
+  { value: 'certificate', label: 'Forsikringsbevis (din personlige avtale)', short: 'Forsikringsbevis' },
+  { value: 'terms', label: 'Vilkår (generelle betingelser)', short: 'Vilkår' },
+  { value: 'both', label: 'Bevis og vilkår i samme fil', short: 'Bevis og vilkår' },
+  { value: 'bylaws', label: 'Vedtekter (sameie / borettslag)', short: 'Vedtekter' },
+  { value: 'other', label: 'Annet', short: 'Annet' },
+]
+
+export function docKindLabel(value) {
+  return docKinds.find((k) => k.value === value)?.short ?? 'Ikke oppgitt'
+}

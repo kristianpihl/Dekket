@@ -3,6 +3,7 @@ import { Alert, Button, Form, Modal } from 'react-bootstrap'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../components/AuthProvider'
 import { deleteMyAccount } from '../lib/accountActions'
+import { exportMyData, saveBlob } from '../lib/exportData'
 import { formatDate } from '../lib/format'
 import { supabase } from '../lib/supabaseClient'
 
@@ -16,9 +17,25 @@ export default function Account() {
   const [confirmText, setConfirmText] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const [exp, setExp] = useState({ busy: false, status: '', error: '', done: false, failed: [], fileCount: 0 })
 
   const acceptedAt = user.user_metadata?.accepted_terms_at
   const acceptedVersion = user.user_metadata?.accepted_terms_version
+
+  // Packs everything the user has in Dekket into one zip and hands it to the browser as a download.
+  async function handleExport() {
+    setExp({ busy: true, status: 'Starter …', error: '', done: false, failed: [], fileCount: 0 })
+    try {
+      const { blob, filename, failed, fileCount } = await exportMyData(user, (status) =>
+        setExp((prev) => ({ ...prev, status })),
+      )
+      saveBlob(blob, filename)
+      setExp({ busy: false, status: '', error: '', done: true, failed, fileCount })
+    } catch (e) {
+      console.error(e)
+      setExp({ busy: false, status: '', error: e.message || 'Noe gikk galt. Prøv igjen.', done: false, failed: [], fileCount: 0 })
+    }
+  }
 
   async function handleDelete() {
     setBusy(true)
@@ -64,6 +81,32 @@ export default function Account() {
         <p className="lp-muted mb-0">
           Les <Link to="/vilkar">vilkårene</Link> og <Link to="/personvern">personvernerklæringen</Link>.
         </p>
+      </div>
+
+      <div className="card-box account-block">
+        <h2 className="section-title">Last ned dataene dine</h2>
+        <p>
+          Du kan få alt Dekket har lagret om deg som én zip-fil: kontoopplysninger, oversikten over
+          forsikringene (åpnes i Excel), aktivitetsloggen og dokumentene du har lastet opp. Filen lages
+          i nettleseren din.
+        </p>
+        {exp.error && <Alert variant="danger">{exp.error}</Alert>}
+        {exp.done && (
+          <Alert variant={exp.failed.length ? 'warning' : 'success'}>
+            Filen er lastet ned ({exp.fileCount} {exp.fileCount === 1 ? 'dokument' : 'dokumenter'}).
+            {exp.failed.length > 0 && (
+              <>
+                {' '}
+                {exp.failed.length} {exp.failed.length === 1 ? 'fil' : 'filer'} kunne ikke hentes og mangler:{' '}
+                {exp.failed.map((f) => f.title).join(', ')}. Prøv igjen.
+              </>
+            )}
+          </Alert>
+        )}
+        <Button variant="outline-primary" onClick={handleExport} disabled={exp.busy}>
+          <i className="bi bi-download me-2" aria-hidden="true" />
+          {exp.busy ? exp.status : 'Last ned dataene mine'}
+        </Button>
       </div>
 
       <div className="card-box account-block account-danger">

@@ -2,8 +2,9 @@ import { useState } from 'react'
 import { Alert, Button, Table } from 'react-bootstrap'
 import { Link, useSearchParams } from 'react-router-dom'
 import EditPolicyModal from '../components/EditPolicyModal'
-import { holderLabel, insuranceTypeLabel } from '../content/insuranceTypes'
+import { docKindLabel, holderLabel, insuranceTypeLabel } from '../content/insuranceTypes'
 import { formatDate, formatMoney } from '../lib/format'
+import { features } from '../content/site'
 import { daysUntil, policyStatus } from '../lib/overview'
 import { deletePolicy, openPolicyFile } from '../lib/policyActions'
 import { usePolicies } from '../lib/usePolicies'
@@ -92,8 +93,8 @@ export default function Policies() {
                   <td>
                     <div className="fw-medium">{p.title}</div>
                     <div className="policy-meta">
-                      {p.insurer ? `${p.insurer} · ` : ''}
-                      {p.file_name}
+                      {docKindLabel(p.doc_kind)}
+                      {p.insurer ? ` · ${p.insurer}` : ''} · {p.file_name}
                     </div>
                   </td>
                   <td className="d-none d-sm-table-cell">{insuranceTypeLabel(p.insurance_type)}</td>
@@ -108,6 +109,13 @@ export default function Policies() {
                     <Button size="sm" variant="outline-primary" onClick={() => handleOpen(p)}>
                       Åpne
                     </Button>{' '}
+                    {features.analysis && (
+                      <>
+                        <Link to={`/analyse/${p.id}`} className="btn btn-sm btn-outline-primary">
+                          Analyse
+                        </Link>{' '}
+                      </>
+                    )}
                     <Button size="sm" variant="outline-primary" onClick={() => setSearchParams({ rediger: p.id })}>
                       Rediger
                     </Button>{' '}
