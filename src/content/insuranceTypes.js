@@ -44,3 +44,32 @@ export const docKinds = [
 export function docKindLabel(value) {
   return docKinds.find((k) => k.value === value)?.short ?? 'Ikke oppgitt'
 }
+
+// Who pays the premium. Often the same as who holds the policy, but not always: a policy in your spouse's
+// name that you pay for, or one via your job that you pay yourself.
+export const payers = [
+  { value: 'private', label: 'Meg selv' },
+  { value: 'work', label: 'Jobben' },
+  { value: 'sameie', label: 'Sameiet / borettslaget (felleskostnader)' },
+  { value: 'spouse', label: 'Ektefelle / samboer' },
+  { value: 'other', label: 'Noen andre' },
+]
+
+export function payerLabel(value) {
+  return payers.find((p) => p.value === value)?.label.replace(/ \(felleskostnader\)$/, '') ?? 'Ikke oppgitt'
+}
+
+// The kinds of file you can attach to an INSURANCE policy. ("bylaws" and "other" are legacy values from
+// before "Andre dokumenter" existed; they still display correctly on old rows.)
+export const insuranceDocKinds = docKinds.filter((k) => ['certificate', 'terms', 'both'].includes(k.value))
+
+// Categories for documents that are not insurance policies ("Andre dokumenter").
+export const documentCategories = [
+  { value: 'bylaws', label: 'Vedtekter (sameie / borettslag)', short: 'Vedtekter' },
+  { value: 'housing', label: 'Bolig (kontrakt, tilstandsrapport, …)', short: 'Bolig' },
+  { value: 'other', label: 'Annet', short: 'Annet' },
+]
+
+export function documentCategoryLabel(value) {
+  return documentCategories.find((c) => c.value === value)?.short ?? 'Annet'
+}

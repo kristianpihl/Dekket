@@ -1420,3 +1420,141 @@ html {
 .suggest-list li + li {
   margin-top: 0.4rem;
 }
+
+/* ==========================================================================
+   Selskaper, andre dokumenter, hvem betaler
+   ========================================================================== */
+.provider-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.provider {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.provider-head {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.provider-name {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.provider-logo {
+  border-radius: 12px;
+  object-fit: contain;
+  background: #fff;
+  border: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.provider-logo--initials {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-primary-tint);
+  color: var(--color-primary-dark);
+  border-color: transparent;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.provider-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.provider-facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.3rem 1rem;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.provider-facts dt {
+  font-weight: 400;
+  color: var(--color-muted);
+}
+
+.provider-facts dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.provider-multiline {
+  white-space: pre-line;
+}
+
+.provider-policies {
+  font-size: 0.88rem;
+  border-top: 1px solid var(--color-border);
+  padding-top: 0.75rem;
+}
+
+.provider-foot {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: auto;
+}
+
+.logo-field {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.logo-field > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.suggest-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.chip {
+  background: var(--color-primary-tint);
+  color: var(--color-primary-dark);
+  border: 0;
+  border-radius: 99px;
+  padding: 0.3rem 0.85rem;
+  font-size: 0.88rem;
+  cursor: pointer;
+}
+
+.chip:hover {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.doc-notes {
+  color: var(--color-muted);
+  font-size: 0.82rem;
+  margin-top: 0.15rem;
+  max-width: 48ch;
+  overflow-wrap: anywhere;
+}
+
+.cost-others {
+  margin: 1rem 0 0;
+  padding: 0.6rem 0.8rem;
+  background: var(--color-surface);
+  border-radius: 10px;
+  font-size: 0.88rem;
+  color: var(--color-muted);
+}

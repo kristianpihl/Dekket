@@ -33,7 +33,8 @@ npm run dev
   `overview.js` har alle beregningene bak dashboardet (status, frister, kostnader)
 - `src/routes.jsx` — alle sider/URL-er
 - `supabase/` — SQL som kjøres i Supabase SQL Editor, i denne rekkefølgen:
-  `documents.sql` → `account.sql` → `dashboard.sql` → `doc-kind.sql` (alle kan kjøres flere ganger).
+  `documents.sql` → `account.sql` → `dashboard.sql` → `doc-kind.sql` → `payers-documents-providers.sql`
+  (alle kan kjøres flere ganger).
   `analysis.sql` trengs først når analysen skrus på
 
 **Funksjonsbrytere:** `features` i `src/content/site.js` skrur ferdigbygde funksjoner av/på.

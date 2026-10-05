@@ -8,11 +8,13 @@ import AddPolicy from './pages/AddPolicy'
 import Analysis from './pages/Analysis'
 import AnalysisDetail from './pages/AnalysisDetail'
 import Dashboard from './pages/Dashboard'
+import Documents from './pages/Documents'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import NotFound from './pages/NotFound'
 import Policies from './pages/Policies'
 import Privacy from './pages/Privacy'
+import Providers from './pages/Providers'
 import Terms from './pages/Terms'
 
 export default function AppRoutes() {
@@ -39,6 +41,8 @@ export default function AppRoutes() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/legg-til" element={<AddPolicy />} />
         <Route path="/forsikringer" element={<Policies />} />
+        <Route path="/dokumenter" element={<Documents />} />
+        <Route path="/selskaper" element={<Providers />} />
         {features.analysis && <Route path="/analyse" element={<Analysis />} />}
         {features.analysis && <Route path="/analyse/:policyId" element={<AnalysisDetail />} />}
         <Route path="/konto" element={<Account />} />

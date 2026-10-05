@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Alert, Button, Table } from 'react-bootstrap'
 import { Link, useSearchParams } from 'react-router-dom'
 import EditPolicyModal from '../components/EditPolicyModal'
-import { docKindLabel, holderLabel, insuranceTypeLabel } from '../content/insuranceTypes'
+import { docKindLabel, holderLabel, insuranceTypeLabel, payerLabel } from '../content/insuranceTypes'
 import { formatDate, formatMoney } from '../lib/format'
 import { features } from '../content/site'
 import { daysUntil, policyStatus } from '../lib/overview'
@@ -81,7 +81,8 @@ export default function Policies() {
               <tr>
                 <th>Navn</th>
                 <th className="d-none d-sm-table-cell">Type</th>
-                <th className="d-none d-lg-table-cell">Hvem</th>
+                <th className="d-none d-lg-table-cell">Tegnet via</th>
+                <th className="d-none d-md-table-cell">Betaler</th>
                 <th>Gyldig til</th>
                 <th className="d-none d-md-table-cell text-end">Pris per år</th>
                 <th aria-label="Handlinger" />
@@ -96,9 +97,17 @@ export default function Policies() {
                       {docKindLabel(p.doc_kind)}
                       {p.insurer ? ` · ${p.insurer}` : ''} · {p.file_name}
                     </div>
+                    <div className="policy-meta d-md-none">Betaler: {payerLabel(p.payer ?? 'private')}</div>
                   </td>
                   <td className="d-none d-sm-table-cell">{insuranceTypeLabel(p.insurance_type)}</td>
                   <td className="d-none d-lg-table-cell">{holderLabel(p.holder)}</td>
+                  <td className="d-none d-md-table-cell">
+                    {p.payer && p.payer !== 'private' ? (
+                      <span className="pill pill--ok">{payerLabel(p.payer)}</span>
+                    ) : (
+                      payerLabel(p.payer ?? 'private')
+                    )}
+                  </td>
                   <td>
                     <EndDate policy={p} />
                   </td>

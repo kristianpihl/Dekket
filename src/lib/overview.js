@@ -190,13 +190,18 @@ export function upcomingRenewals(policies, today = new Date(), limit = 6) {
 
 // --- Cost -------------------------------------------------------------------------------------
 
+// What the USER pays: only policies where the user is the payer ("Meg selv"; rows without a payer count as the
+// user). What others pay (a job, a housing association, a spouse) is reported separately in `others*`.
 export function costSummary(policies, today = new Date()) {
   const active = policies.filter((p) => isActive(p, today))
   const priced = active.filter((p) => p.annual_premium != null)
-  const year = priced.reduce((sum, p) => sum + Number(p.annual_premium), 0)
+  const mine = priced.filter((p) => (p.payer ?? 'private') === 'private')
+  const others = priced.filter((p) => (p.payer ?? 'private') !== 'private')
+  const year = mine.reduce((sum, p) => sum + Number(p.annual_premium), 0)
+  const othersYear = others.reduce((sum, p) => sum + Number(p.annual_premium), 0)
 
   const byType = new Map()
-  priced.forEach((p) => {
+  mine.forEach((p) => {
     const cur = byType.get(p.insurance_type) ?? { type: p.insurance_type, year: 0, count: 0 }
     cur.year += Number(p.annual_premium)
     cur.count += 1
@@ -214,6 +219,8 @@ export function costSummary(policies, today = new Date()) {
     year,
     month: year / 12,
     byArea,
+    othersYear,
+    othersCount: others.length,
     pricedCount: priced.length,
     missingPrice: active.length - priced.length,
   }

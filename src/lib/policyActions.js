@@ -3,6 +3,9 @@ import { supabase } from './supabaseClient'
 // Name of the private storage bucket (created in supabase/documents.sql).
 export const POLICY_BUCKET = 'policies'
 
+// Name of the private bucket for insurance-provider logos (created in supabase/payers-documents-providers.sql).
+export const LOGO_BUCKET = 'provider-logos'
+
 // The bucket is private, so the browser can't link to a file directly.
 // We ask Supabase for a temporary link (valid 60 seconds) and open that.
 // Returns an error message, or '' when it worked.

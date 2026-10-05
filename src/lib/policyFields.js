@@ -7,6 +7,7 @@ export const emptyValues = {
   docKind: '', // must be chosen when adding
   insurer: '',
   holder: 'private',
+  payer: 'private',
   validFrom: '',
   validTo: '',
   premium: '',
@@ -21,6 +22,7 @@ export function valuesFromPolicy(policy) {
     docKind: policy.doc_kind ?? 'unknown',
     insurer: policy.insurer ?? '',
     holder: policy.holder ?? 'private',
+    payer: policy.payer ?? 'private',
     validFrom: policy.valid_from ?? '',
     validTo: policy.valid_to ?? '',
     premium: policy.annual_premium != null ? String(policy.annual_premium) : '',
@@ -58,6 +60,7 @@ export function toDbFields(v) {
     doc_kind: v.docKind || 'unknown',
     insurer: v.insurer.trim() || null,
     holder: v.holder,
+    payer: v.payer,
     valid_from: v.validFrom || null,
     valid_to: v.validTo || null,
     annual_premium: annual,

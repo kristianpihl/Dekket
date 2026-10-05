@@ -1,11 +1,26 @@
 import { Col, Form, InputGroup, Row } from 'react-bootstrap'
-import { docKinds, holders, insuranceTypes } from '../content/insuranceTypes'
+import { docKinds, holders, insuranceDocKinds, insuranceTypes, payers } from '../content/insuranceTypes'
 
 // The form fields that describe a policy. Used in the "add" flow and the "edit" dialog.
 // `values` is the form state (see lib/policyFields.js); `onChange(patch)` merges changes into it.
 // `idPrefix` keeps the field ids unique when two forms exist on the same page.
-export default function PolicyFields({ values, onChange, idPrefix = 'pf', titlePlaceholder, kindRequired = false }) {
+// `insurerSuggestions`: names of the user's saved insurance providers, offered while typing the insurer.
+export default function PolicyFields({
+  values,
+  onChange,
+  idPrefix = 'pf',
+  titlePlaceholder,
+  kindRequired = false,
+  insurerSuggestions = [],
+}) {
   const id = (name) => `${idPrefix}-${name}`
+
+  // Old rows may hold a legacy kind ("bylaws", "other") that can no longer be picked for a new policy —
+  // keep it in the list so the dropdown still shows it instead of going blank.
+  const legacy = docKinds.find(
+    (k) => k.value === values.docKind && !insuranceDocKinds.some((i) => i.value === k.value),
+  )
+  const kindOptions = legacy ? [...insuranceDocKinds, legacy] : insuranceDocKinds
 
   return (
     <>
@@ -31,7 +46,7 @@ export default function PolicyFields({ values, onChange, idPrefix = 'pf', titleP
           ) : (
             <option value="unknown">Ikke oppgitt</option>
           )}
-          {docKinds.map((k) => (
+          {kindOptions.map((k) => (
             <option key={k.value} value={k.value}>
               {k.label}
             </option>
@@ -67,15 +82,37 @@ export default function PolicyFields({ values, onChange, idPrefix = 'pf', titleP
         </Col>
       </Row>
 
-      <Form.Group className="mb-3" controlId={id('insurer')}>
-        <Form.Label>Forsikringsselskap (valgfritt)</Form.Label>
-        <Form.Control
-          type="text"
-          placeholder="F.eks. If, Gjensidige, Tryg"
-          value={values.insurer}
-          onChange={(e) => onChange({ insurer: e.target.value })}
-        />
-      </Form.Group>
+      <Row>
+        <Col sm={6}>
+          <Form.Group className="mb-3" controlId={id('payer')}>
+            <Form.Label>Hvem betaler?</Form.Label>
+            <Form.Select value={values.payer} onChange={(e) => onChange({ payer: e.target.value })}>
+              {payers.map((p) => (
+                <option key={p.value} value={p.value}>
+                  {p.label}
+                </option>
+              ))}
+            </Form.Select>
+          </Form.Group>
+        </Col>
+        <Col sm={6}>
+          <Form.Group className="mb-3" controlId={id('insurer')}>
+            <Form.Label>Forsikringsselskap (valgfritt)</Form.Label>
+            <Form.Control
+              type="text"
+              list={id('insurer-list')}
+              placeholder="F.eks. If, Gjensidige, Tryg"
+              value={values.insurer}
+              onChange={(e) => onChange({ insurer: e.target.value })}
+            />
+            <datalist id={id('insurer-list')}>
+              {insurerSuggestions.map((name) => (
+                <option key={name} value={name} />
+              ))}
+            </datalist>
+          </Form.Group>
+        </Col>
+      </Row>
 
       <Row>
         <Col sm={6}>

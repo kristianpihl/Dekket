@@ -3,12 +3,14 @@ import { Alert, Button, Form, Modal } from 'react-bootstrap'
 import PolicyFields from '../forms/PolicyFields'
 import { toDbFields, validateValues, valuesFromPolicy } from '../lib/policyFields'
 import { supabase } from '../lib/supabaseClient'
+import { useProviders } from '../lib/useProviders'
 
 // Dialog for changing a policy's details (name, type, who holds it, dates, price).
 // `policy` is the row being edited; `onSaved` is called after a successful save.
 // Mount it only while editing (<EditPolicyModal key={policy.id} … />) so it starts fresh each time.
 export default function EditPolicyModal({ policy, onClose, onSaved }) {
   const [values, setValues] = useState(() => valuesFromPolicy(policy))
+  const { providers } = useProviders()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
 
@@ -49,6 +51,7 @@ export default function EditPolicyModal({ policy, onClose, onSaved }) {
             values={values}
             onChange={(changes) => setValues((v) => ({ ...v, ...changes }))}
             idPrefix="edit"
+            insurerSuggestions={providers.map((p) => p.name)}
           />
         </Modal.Body>
         <Modal.Footer>

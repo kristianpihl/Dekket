@@ -8,6 +8,7 @@ import { formatBytes } from '../lib/format'
 import { POLICY_BUCKET } from '../lib/policyActions'
 import { emptyValues, toDbFields, validateValues } from '../lib/policyFields'
 import { supabase } from '../lib/supabaseClient'
+import { useProviders } from '../lib/useProviders'
 import PolicyFields from './PolicyFields'
 
 const MAX_BYTES = 10 * 1024 * 1024 // must match the bucket limit in supabase/documents.sql
@@ -21,6 +22,7 @@ function withoutExtension(name) {
 // Three-step flow: 1) pick a file, 2) describe it and upload, 3) done.
 export default function UploadPolicyForm({ onUploaded }) {
   const { user } = useAuth()
+  const { providers } = useProviders()
   const fileInput = useRef(null)
   const [step, setStep] = useState(1)
   const [file, setFile] = useState(null)
@@ -171,7 +173,7 @@ export default function UploadPolicyForm({ onUploaded }) {
             kan legge dem inn senere.
           </p>
 
-          <PolicyFields values={values} onChange={patch} idPrefix="add" kindRequired />
+          <PolicyFields values={values} onChange={patch} idPrefix="add" kindRequired insurerSuggestions={providers.map((p) => p.name)} />
 
           <Form.Check
             id="policy-consent"

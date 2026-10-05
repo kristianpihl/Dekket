@@ -26,7 +26,13 @@ export default function Privacy() {
           </li>
           <li>
             <strong>Dokumentene du laster opp,</strong> og opplysningene du oppgir om dem: navn,
-            type forsikring, forsikringsselskap, filnavn, størrelse og tidspunkt.
+            type forsikring, forsikringsselskap, hvem som har tegnet og betaler, datoer, pris,
+            filnavn, størrelse og tidspunkt.
+          </li>
+          <li>
+            <strong>Andre dokumenter og selskaper du legger inn:</strong> for eksempel vedtekter for
+            sameiet, og kontaktopplysninger, nettadresser, kundenummer og logo for
+            forsikringsselskapene dine. Dette er opplysninger du selv skriver inn eller laster opp.
           </li>
           <li>
             <strong>Innholdet i dokumentene.</strong> Forsikringsdokumenter kan inneholde navn,
