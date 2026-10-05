@@ -23,6 +23,12 @@ export default function SidebarNav({ onNavigate }) {
       </nav>
 
       <div className="sidebar-foot">
+        <p className="sidebar-note">
+          Dekket er en hjelper. Du er selv ansvarlig for at du er dekket.{' '}
+          <Link to="/vilkar" onClick={onNavigate}>
+            Les mer
+          </Link>
+        </p>
         <div className="sidebar-user">{user?.email}</div>
         <button type="button" className="link-button" onClick={() => signOut()}>
           Logg ut

@@ -15,4 +15,5 @@ export const appNav = [
   { label: 'Legg til forsikring', to: '/legg-til', icon: 'plus-circle' },
   { label: 'Mine forsikringer', to: '/forsikringer', icon: 'table' },
   { label: 'Analyse', to: '/analyse', icon: 'stars' },
+  { label: 'Konto', to: '/konto', icon: 'person-circle' },
 ]

@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { Alert, Button, Form } from 'react-bootstrap'
-import { Navigate, useLocation, useSearchParams } from 'react-router-dom'
+import { Link, Navigate, useLocation, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../components/AuthProvider'
+import { LEGAL_VERSION } from '../content/legal'
 
 const MIN_PASSWORD_LENGTH = 8
 
@@ -25,6 +26,7 @@ export default function Login() {
   const [mode, setMode] = useState(searchParams.get('ny') ? 'register' : 'login') // 'login' | 'register'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [accepted, setAccepted] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [info, setInfo] = useState('')
@@ -46,7 +48,11 @@ export default function Login() {
 
     setBusy(true)
     const { data, error: authError } = isRegister
-      ? await signUp(email, password)
+      ? await signUp(email, password, {
+          // Saved on the account so we can show which version of the terms was accepted, and when.
+          accepted_terms_version: LEGAL_VERSION,
+          accepted_terms_at: new Date().toISOString(),
+        })
       : await signIn(email, password)
     setBusy(false)
 
@@ -107,6 +113,30 @@ export default function Login() {
             <Form.Text muted>Minst {MIN_PASSWORD_LENGTH} tegn.</Form.Text>
           )}
         </Form.Group>
+
+        {isRegister && (
+          <Form.Check
+            id="accept-terms"
+            type="checkbox"
+            className="mb-3"
+            required
+            checked={accepted}
+            onChange={(e) => setAccepted(e.target.checked)}
+            label={
+              <>
+                Jeg har lest og godtar{' '}
+                <Link to="/vilkar" target="_blank">
+                  vilkårene
+                </Link>{' '}
+                og{' '}
+                <Link to="/personvern" target="_blank">
+                  personvernerklæringen
+                </Link>
+                , og forstår at jeg selv er ansvarlig for at jeg er dekket.
+              </>
+            }
+          />
+        )}
 
         <Button type="submit" disabled={busy} className="w-100">
           {busy ? 'Vent …' : isRegister ? 'Opprett konto' : 'Logg inn'}

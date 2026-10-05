@@ -22,7 +22,9 @@ create table if not exists public.policies (
   file_path      text not null,                 -- path inside the `policies` bucket: <user_id>/<uuid>.<ext>
   file_name      text not null,                 -- original file name
   file_size      bigint,
-  mime_type      text
+  mime_type      text,
+  consent_at     timestamptz,                   -- when the user consented to processing this document
+  consent_version text                          -- which version of the legal texts (see src/content/legal.js)
 );
 
 create index if not exists policies_user_created_idx

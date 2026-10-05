@@ -3,6 +3,7 @@ import { Alert, Button, Form } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../components/AuthProvider'
 import { insuranceTypes } from '../content/insuranceTypes'
+import { LEGAL_VERSION } from '../content/legal'
 import { formatBytes } from '../lib/format'
 import { POLICY_BUCKET } from '../lib/policyActions'
 import { supabase } from '../lib/supabaseClient'
@@ -24,6 +25,7 @@ export default function UploadPolicyForm({ onUploaded }) {
   const [title, setTitle] = useState('')
   const [type, setType] = useState('home')
   const [insurer, setInsurer] = useState('')
+  const [consent, setConsent] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
 
@@ -85,6 +87,9 @@ export default function UploadPolicyForm({ onUploaded }) {
       file_name: file.name,
       file_size: file.size,
       mime_type: file.type,
+      // Proof of the user's explicit consent for this document (it may contain health data).
+      consent_at: new Date().toISOString(),
+      consent_version: LEGAL_VERSION,
     })
 
     if (insertError) {
@@ -105,6 +110,7 @@ export default function UploadPolicyForm({ onUploaded }) {
     setFile(null)
     setTitle('')
     setInsurer('')
+    setConsent(false)
     setType('home')
     setError('')
     setStep(1)
@@ -187,6 +193,26 @@ export default function UploadPolicyForm({ onUploaded }) {
               onChange={(e) => setInsurer(e.target.value)}
             />
           </Form.Group>
+
+          <Form.Check
+            id="policy-consent"
+            type="checkbox"
+            className="consent-box mb-4"
+            required
+            checked={consent}
+            onChange={(e) => setConsent(e.target.checked)}
+            label={
+              <>
+                Dokumentet kan inneholde personopplysninger, også om helse. Jeg samtykker til at Dekket
+                behandler innholdet for å lage oversikt og analyse for meg. Jeg kan trekke samtykket
+                når som helst ved å slette dokumentet eller kontoen. Se{' '}
+                <Link to="/personvern" target="_blank">
+                  personvernerklæringen
+                </Link>
+                .
+              </>
+            }
+          />
 
           <div className="d-flex gap-2">
             <Button variant="outline-primary" onClick={() => setStep(1)} disabled={busy}>

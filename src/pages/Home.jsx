@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../components/AuthProvider'
 
 // The public front page. All the text lives in the lists below so it's easy to edit.
@@ -39,6 +39,7 @@ const planPoints = [
 ]
 
 const faqs = [
+  { q: 'Hvem har ansvaret for at jeg er dekket?', a: 'Du. Dekket er en hjelper som gir deg oversikt og forklaring, men du er selv ansvarlig for at du har den dekningen du trenger, og for å sette deg inn i forsikringsproduktene dine. Det er forsikringsavtalen og selskapet som avgjør hva du har krav på.' },
   { q: 'Hvordan tjener dere penger?', a: 'Du betaler 39 kr i måneden. Vi tar ingenting fra forsikringsselskaper, og vi selger ikke forsikring.' },
   { q: 'Erstatter dette forsikringsselskapet eller en rådgiver?', a: 'Nei. Dekket gir en forklaring og en oversikt, men det er forsikringsvilkårene og selskapet som avgjør hva du har krav på.' },
   { q: 'Hvem kan se dokumentene mine?', a: 'Bare du. Filene lagres privat i EU, og du kan slette dem når som helst.' },
@@ -48,6 +49,8 @@ const faqs = [
 export default function Home() {
   const { user } = useAuth()
   const { hash } = useLocation()
+  const [searchParams] = useSearchParams()
+  const accountDeleted = searchParams.get('slettet')
 
   // Lets links like /#pris scroll to the right section, also from other pages.
   useEffect(() => {
@@ -59,6 +62,11 @@ export default function Home() {
 
   return (
     <>
+      {accountDeleted && (
+        <div className="lp-notice" role="status">
+          Kontoen din og alle dokumentene dine er slettet.
+        </div>
+      )}
       <section className="lp-band lp-band--card lp-hero">
         <div className="lp-inner lp-hero-grid">
           <div>
