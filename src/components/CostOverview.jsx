@@ -21,6 +21,7 @@ export default function CostOverview({ cost }) {
         <span className="cost-total-num">{formatMoney(cost.month)}</span>
         <span className="lp-muted"> per måned</span>
         <div className="lp-muted">{formatMoney(cost.year)} per år</div>
+        {cost.feesYear > 0 && <div className="lp-muted">Av dette er {formatMoney(cost.feesYear)} gebyrer.</div>}
       </div>
 
       {cost.byArea.length > 0 && (

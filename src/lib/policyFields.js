@@ -10,8 +10,12 @@ export const emptyValues = {
   payer: 'private',
   validFrom: '',
   validTo: '',
+  autoRenews: true, // most policies renew by themselves every year
   premium: '',
   premiumPeriod: 'year', // 'year' | 'month' — what the number in `premium` means
+  payFreq: '', // '' = not entered, else monthly | quarterly | semiannual | annual
+  payAnchor: '', // one known payment day (the last or the next one)
+  fee: '', // invoice/instalment fee per payment, in kr
 }
 
 // The database stores the price per year; show it per year when editing.
@@ -25,8 +29,12 @@ export function valuesFromPolicy(policy) {
     payer: policy.payer ?? 'private',
     validFrom: policy.valid_from ?? '',
     validTo: policy.valid_to ?? '',
+    autoRenews: policy.auto_renews !== false,
     premium: policy.annual_premium != null ? String(policy.annual_premium) : '',
     premiumPeriod: 'year',
+    payFreq: policy.payment_frequency ?? '',
+    payAnchor: policy.payment_anchor ?? '',
+    fee: policy.fee_per_payment != null ? String(policy.fee_per_payment) : '',
   }
 }
 
@@ -45,6 +53,10 @@ export function validateValues(v, { requireKind = false } = {}) {
     const amount = parseAmount(v.premium)
     if (amount === null || amount < 0) return 'Prisen må være et tall som ikke er negativt.'
   }
+  if (v.fee.trim() !== '') {
+    const fee = parseAmount(v.fee)
+    if (fee === null || fee < 0) return 'Gebyret må være et tall som ikke er negativt. Skriv 0 hvis det ikke er noe gebyr.'
+  }
   if (v.validFrom && v.validTo && v.validTo < v.validFrom) {
     return 'Sluttdatoen kan ikke være før startdatoen.'
   }
@@ -54,6 +66,7 @@ export function validateValues(v, { requireKind = false } = {}) {
 export function toDbFields(v) {
   const amount = v.premium.trim() === '' ? null : parseAmount(v.premium)
   const annual = amount === null ? null : Math.round(amount * (v.premiumPeriod === 'month' ? 12 : 1) * 100) / 100
+  const fee = v.fee.trim() === '' ? null : parseAmount(v.fee)
   return {
     title: v.title.trim(),
     insurance_type: v.type,
@@ -63,6 +76,10 @@ export function toDbFields(v) {
     payer: v.payer,
     valid_from: v.validFrom || null,
     valid_to: v.validTo || null,
+    auto_renews: v.autoRenews,
     annual_premium: annual,
+    payment_frequency: v.payFreq || null,
+    payment_anchor: v.payAnchor || null,
+    fee_per_payment: fee,
   }
 }

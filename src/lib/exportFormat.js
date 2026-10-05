@@ -2,6 +2,7 @@
 // zip archive. No network or screens here (the fetching lives in exportData.js), so this is easy to test.
 
 import { strToU8 } from 'fflate'
+import { frequencyLabel } from './payments'
 import {
   docKindLabel,
   documentCategoryLabel,
@@ -118,7 +119,12 @@ export function buildArchiveFiles({
     paid_by_label: payerLabel(p.payer),
     valid_from: p.valid_from ?? null,
     valid_to: p.valid_to ?? null,
+    auto_renews: p.auto_renews !== false,
     annual_premium_nok: p.annual_premium ?? null,
+    payment_frequency: p.payment_frequency ?? null,
+    payment_frequency_label: p.payment_frequency ? frequencyLabel(p.payment_frequency) : null,
+    payment_date: p.payment_anchor ?? null,
+    fee_per_payment_nok: p.fee_per_payment ?? null,
     original_file_name: p.file_name,
     file_in_archive: policyFiles.names.get(p.id) ?? null,
     file_size_bytes: p.file_size ?? null,
@@ -138,7 +144,11 @@ export function buildArchiveFiles({
       { header: 'Betalt av', get: (r) => r.paid_by_label },
       { header: 'Gyldig fra', get: (r) => r.valid_from },
       { header: 'Gyldig til', get: (r) => r.valid_to },
+      { header: 'Fornyes automatisk', get: (r) => (r.auto_renews ? 'ja' : 'nei') },
       { header: 'Pris per år (kr)', get: (r) => r.annual_premium_nok },
+      { header: 'Betaler hvor ofte', get: (r) => r.payment_frequency_label },
+      { header: 'Betalingsdato', get: (r) => r.payment_date },
+      { header: 'Gebyr per faktura (kr)', get: (r) => r.fee_per_payment_nok },
       { header: 'Fil i arkivet', get: (r) => r.file_in_archive },
       { header: 'Opprinnelig filnavn', get: (r) => r.original_file_name },
       { header: 'Lagt til', get: (r) => r.added_at },

@@ -4,7 +4,9 @@
 // `today` is a parameter (defaulting to now) so the logic can be checked against fixed dates.
 
 import { holderLabel, insuranceTypes } from '../content/insuranceTypes'
+import { addYears, monthsBetween, todayIso } from './dates'
 import { formatDate } from './format'
+import { annualCost, annualFee, feeNeedsFrequency, frequencyOf, installmentAmount, nextPaymentDate } from './payments'
 
 const SOON_DAYS = 60 // "forfaller snart" = ends within this many days
 
@@ -17,9 +19,33 @@ export function daysUntil(dateStr, today = new Date()) {
   return Math.round((end - start) / 86400000)
 }
 
-// 'expired' | 'soon' | 'no-date' | 'ok'
+// --- Auto-renewal ---------------------------------------------------------------------------------
+// Most policies renew by themselves every year. For those, `valid_to` is the end of the period the
+// document describes, and the policy simply carries on: the date that matters is the NEXT renewal,
+// i.e. valid_to plus whole years until it is today or later. A rows without the flag counts as
+// auto-renewing, like the database default.
+export const isAutoRenewing = (policy) => policy.auto_renews !== false
+
+// The date the policy ends, or (if it renews automatically) next renews. null when there is no date.
+export function effectiveEnd(policy, today = new Date()) {
+  const end = policy.valid_to
+  if (!end) return null
+  if (!isAutoRenewing(policy)) return end
+
+  const now = todayIso(today)
+  if (end >= now) return end
+
+  // Smallest number of whole years that brings the date to today or later. (Always counted from the
+  // original date, so 29 Feb returns to 29 Feb in leap years instead of drifting.)
+  let years = Math.max(1, Math.floor(monthsBetween(end, now) / 12))
+  while (addYears(end, years) < now) years++
+  while (years > 1 && addYears(end, years - 1) >= now) years--
+  return addYears(end, years)
+}
+
+// 'expired' | 'soon' | 'no-date' | 'ok'. An auto-renewing policy is never 'expired' — it renews.
 export function policyStatus(policy, today = new Date()) {
-  const days = daysUntil(policy.valid_to, today)
+  const days = daysUntil(effectiveEnd(policy, today), today)
   if (days === null) return 'no-date'
   if (days < 0) return 'expired'
   if (days <= SOON_DAYS) return 'soon'
@@ -75,10 +101,12 @@ export function buildAreas(policies, today = new Date()) {
       const statusOf = (p) => policyStatus(p, today)
       const status = STATUS_ORDER.find((s) => items.some((p) => statusOf(p) === s))
       const rep = items.find((p) => statusOf(p) === status)
+      const end = effectiveEnd(rep, today)
+      const renews = isAutoRenewing(rep)
 
       const detail = {
-        ok: rep.valid_to ? `gyldig til ${formatDate(rep.valid_to)}` : '',
-        soon: `går ut ${formatDate(rep.valid_to)}`,
+        ok: end ? `${renews ? 'fornyes' : 'gyldig til'} ${formatDate(end)}` : '',
+        soon: `${renews ? 'fornyes' : 'går ut'} ${formatDate(end)}`,
         expired: `gikk ut ${formatDate(rep.valid_to)}`,
         'no-date': 'sluttdato mangler',
       }[status]
@@ -105,7 +133,7 @@ export function buildTodos(policies, today = new Date()) {
     ]
   }
 
-  const byEnd = (a, b) => (a.valid_to ?? '').localeCompare(b.valid_to ?? '')
+  const byEnd = (a, b) => (effectiveEnd(a, today) ?? '').localeCompare(effectiveEnd(b, today) ?? '')
   const todos = []
 
   // Expired — unless the same type has another policy that is still running (assume it was replaced).
@@ -118,7 +146,7 @@ export function buildTodos(policies, today = new Date()) {
         id: `expired-${p.id}`,
         icon: 'calendar-x',
         title: `«${p.title}» har gått ut`,
-        note: `Gyldig til ${formatDate(p.valid_to)}. Er den fornyet? Oppdater datoen eller last opp den nye.`,
+        note: `Gyldig til ${formatDate(p.valid_to)}. Fornyes den automatisk? Slå på «Fornyes automatisk», eller oppdater datoen.`,
         action: { label: 'Oppdater', to: `/forsikringer?rediger=${p.id}` },
       }),
     )
@@ -127,12 +155,16 @@ export function buildTodos(policies, today = new Date()) {
     .filter((p) => policyStatus(p, today) === 'soon')
     .sort(byEnd)
     .forEach((p) => {
-      const days = daysUntil(p.valid_to, today)
+      const days = daysUntil(effectiveEnd(p, today), today)
+      const renews = isAutoRenewing(p)
+      const when = days === 0 ? 'i dag' : `om ${days} ${days === 1 ? 'dag' : 'dager'}`
       todos.push({
         id: `soon-${p.id}`,
         icon: 'calendar-event',
-        title: days === 0 ? `«${p.title}» går ut i dag` : `«${p.title}» går ut om ${days} ${days === 1 ? 'dag' : 'dager'}`,
-        note: `Sjekk at den fornyes, og at den fortsatt passer for deg.`,
+        title: `«${p.title}» ${renews ? 'fornyes' : 'går ut'} ${when}`,
+        note: renews
+          ? 'Sjekk pris og vilkår før den fornyes, og at den fortsatt passer for deg.'
+          : 'Sjekk at den fornyes, og at den fortsatt passer for deg.',
         action: { label: 'Se', to: `/forsikringer?rediger=${p.id}` },
       })
     })
@@ -177,18 +209,23 @@ export function attentionCount(policies, today = new Date()) {
   return buildAreas(policies, today).filter((a) => ['soon', 'expired', 'no-date'].includes(a.status) || a.extra).length
 }
 
-// --- Renewals: policies with an end date, soonest first --------------------------------------
+// --- Renewals: policies with an end/renewal date, soonest first ----------------------------------
+// `date` is the date that matters (the next renewal for auto-renewing policies); `renews` says which kind it is.
 
 export function upcomingRenewals(policies, today = new Date(), limit = 6) {
   return policies
     .filter((p) => p.valid_to)
-    .map((p) => ({ policy: p, days: daysUntil(p.valid_to, today), status: policyStatus(p, today) }))
+    .map((p) => {
+      const date = effectiveEnd(p, today)
+      return { policy: p, date, renews: isAutoRenewing(p), days: daysUntil(date, today), status: policyStatus(p, today) }
+    })
     .filter((r) => r.days >= -365) // don't list things that ended more than a year ago
     .sort((a, b) => a.days - b.days)
     .slice(0, limit)
 }
 
 // --- Cost -------------------------------------------------------------------------------------
+// "Cost" = premium + fees (see payments.js annualCost). A policy without a premium has no cost yet.
 
 // What the USER pays: only policies where the user is the payer ("Meg selv"; rows without a payer count as the
 // user). What others pay (a job, a housing association, a spouse) is reported separately in `others*`.
@@ -197,13 +234,14 @@ export function costSummary(policies, today = new Date()) {
   const priced = active.filter((p) => p.annual_premium != null)
   const mine = priced.filter((p) => (p.payer ?? 'private') === 'private')
   const others = priced.filter((p) => (p.payer ?? 'private') !== 'private')
-  const year = mine.reduce((sum, p) => sum + Number(p.annual_premium), 0)
-  const othersYear = others.reduce((sum, p) => sum + Number(p.annual_premium), 0)
+  const year = mine.reduce((sum, p) => sum + annualCost(p), 0)
+  const feesYear = mine.reduce((sum, p) => sum + annualFee(p), 0)
+  const othersYear = others.reduce((sum, p) => sum + annualCost(p), 0)
 
   const byType = new Map()
   mine.forEach((p) => {
     const cur = byType.get(p.insurance_type) ?? { type: p.insurance_type, year: 0, count: 0 }
-    cur.year += Number(p.annual_premium)
+    cur.year += annualCost(p)
     cur.count += 1
     byType.set(p.insurance_type, cur)
   })
@@ -218,6 +256,7 @@ export function costSummary(policies, today = new Date()) {
   return {
     year,
     month: year / 12,
+    feesYear,
     byArea,
     othersYear,
     othersCount: others.length,
@@ -235,7 +274,7 @@ export function holderBreakdown(policies, today = new Date()) {
     .forEach((p) => {
       const cur = map.get(p.holder) ?? { holder: p.holder, label: holderLabel(p.holder), count: 0, year: 0 }
       cur.count += 1
-      cur.year += Number(p.annual_premium ?? 0)
+      cur.year += annualCost(p) ?? 0
       map.set(p.holder, cur)
     })
   return [...map.values()].sort((a, b) => b.count - a.count)
@@ -245,11 +284,11 @@ export function holderBreakdown(policies, today = new Date()) {
 // The household = the user ("Meg selv") + a spouse/partner. Policies paid by a job, a housing association or
 // anyone else are NOT part of it. Expired policies are never counted in the totals; with
 // `includeExpired` they are still listed (greyed out) so the user can see what ended.
-// Returns the table rows plus the totals the page shows.
+// Each row has `year` (the premium), `fee` (fees per year) and `total` (premium + fees; null without a premium).
 const HOUSEHOLD_PAYERS = ['private', 'spouse']
+const payerOf = (p) => p.payer ?? 'private'
 
 export function economySummary(policies, today = new Date(), { includeExpired = false } = {}) {
-  const payerOf = (p) => p.payer ?? 'private'
   const household = policies.filter((p) => HOUSEHOLD_PAYERS.includes(payerOf(p)))
 
   const allRows = household.map((p) => ({
@@ -257,18 +296,21 @@ export function economySummary(policies, today = new Date(), { includeExpired = 
     payer: payerOf(p),
     status: policyStatus(p, today),
     year: p.annual_premium != null ? Number(p.annual_premium) : null,
+    fee: annualFee(p),
+    total: annualCost(p),
   }))
   const counted = allRows.filter((r) => r.status !== 'expired')
 
   // Biggest cost first; policies without a price last; ties by name.
   const rows = (includeExpired ? allRows : counted).sort(
-    (a, b) => (b.year ?? -1) - (a.year ?? -1) || a.policy.title.localeCompare(b.policy.title, 'nb'),
+    (a, b) => (b.total ?? -1) - (a.total ?? -1) || a.policy.title.localeCompare(b.policy.title, 'nb'),
   )
 
-  const sum = (list) => list.reduce((total, r) => total + (r.year ?? 0), 0)
   const part = (payer) => {
-    const year = sum(counted.filter((r) => r.payer === payer))
-    return { year, month: year / 12 }
+    const mine = counted.filter((r) => r.payer === payer)
+    const year = mine.reduce((total, r) => total + (r.total ?? 0), 0)
+    const fees = mine.reduce((total, r) => total + (r.total !== null ? r.fee : 0), 0)
+    return { year, month: year / 12, fees }
   }
   const me = part('private')
   const spouse = part('spouse')
@@ -278,8 +320,9 @@ export function economySummary(policies, today = new Date(), { includeExpired = 
     rows,
     me,
     spouse,
-    household: { year: householdYear, month: householdYear / 12 },
-    missingPrice: counted.filter((r) => r.year === null).length,
+    household: { year: householdYear, month: householdYear / 12, fees: me.fees + spouse.fees },
+    missingPrice: counted.filter((r) => r.total === null).length,
+    feeNeedsFrequency: counted.filter((r) => feeNeedsFrequency(r.policy)).length,
     expiredCount: allRows.length - counted.length,
     paidByOthers: policies.length - household.length,
     hasSpouseRows: allRows.some((r) => r.payer === 'spouse'),
@@ -287,5 +330,46 @@ export function economySummary(policies, today = new Date(), { includeExpired = 
     // household policies that have expired (hidden unless `includeExpired`), and policies paid by someone else.
     expiredRows: allRows.filter((r) => r.status === 'expired'),
     otherPayerPolicies: policies.filter((p) => !HOUSEHOLD_PAYERS.includes(payerOf(p))),
+  }
+}
+
+// --- Betalinger: when the payments happen, per insurer ----------------------------------------
+// For the household's running policies: how often each is paid, on which day, what one payment costs and when
+// the next one is. Grouped by insurer; the insurer with the soonest payment comes first.
+// `incomplete` = policies where we can't tell yet (frequency or a payment date is missing).
+export function paymentSchedule(policies, today = new Date()) {
+  const items = policies
+    .filter((p) => HOUSEHOLD_PAYERS.includes(payerOf(p)) && policyStatus(p, today) !== 'expired')
+    .map((p) => {
+      let next = nextPaymentDate(p.payment_anchor, p.payment_frequency, today)
+      // A policy that ends (and does not renew) before its next payment has no more payments.
+      if (next && !isAutoRenewing(p) && p.valid_to && next > p.valid_to) next = null
+      return {
+        policy: p,
+        payer: payerOf(p),
+        frequency: frequencyOf(p.payment_frequency),
+        day: p.payment_anchor ? Number(p.payment_anchor.slice(8, 10)) : null,
+        next,
+        amount: installmentAmount(p),
+      }
+    })
+
+  const byNext = (a, b) => (a.next ?? '9999').localeCompare(b.next ?? '9999') || a.policy.title.localeCompare(b.policy.title, 'nb')
+
+  const groupMap = new Map()
+  for (const item of items) {
+    const name = (item.policy.insurer ?? '').trim()
+    const key = name.toLowerCase()
+    if (!groupMap.has(key)) groupMap.set(key, { key, insurer: name || null, items: [] })
+    groupMap.get(key).items.push(item)
+  }
+  const groups = [...groupMap.values()]
+  groups.forEach((g) => g.items.sort(byNext))
+  groups.sort((a, b) => (a.items[0].next ?? '9999').localeCompare(b.items[0].next ?? '9999') || (a.insurer ?? '~').localeCompare(b.insurer ?? '~', 'nb'))
+
+  return {
+    groups,
+    upcoming: items.filter((i) => i.next).sort(byNext),
+    incomplete: items.filter((i) => !i.next),
   }
 }

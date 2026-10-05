@@ -1,22 +1,33 @@
-import { holderLabel, insuranceTypeLabel } from '../content/insuranceTypes'
+import { docKindLabel, holderLabel, insuranceTypeLabel, payerLabel } from '../content/insuranceTypes'
 import { formatDate, formatDateTime, formatMoney } from '../lib/format'
+import { frequencyLabel } from '../lib/payments'
 
 const FIELD_LABEL = {
   title: 'Navn',
   insurance_type: 'Type',
   insurer: 'Selskap',
-  holder: 'Hvem',
+  holder: 'Tegnet via',
+  payer: 'Betaler',
+  doc_kind: 'Dokumenttype',
   valid_from: 'Gyldig fra',
   valid_to: 'Gyldig til',
+  auto_renews: 'Fornyes automatisk',
   annual_premium: 'Pris per år',
+  payment_frequency: 'Hvor ofte betalt',
+  payment_anchor: 'Betalingsdato',
+  fee_per_payment: 'Gebyr per faktura',
 }
 
 function showValue(key, value) {
   if (value === null || value === '') return 'ingen'
   if (key === 'insurance_type') return insuranceTypeLabel(value)
   if (key === 'holder') return holderLabel(value)
-  if (key === 'valid_from' || key === 'valid_to') return formatDate(value)
-  if (key === 'annual_premium') return formatMoney(value)
+  if (key === 'payer') return payerLabel(value)
+  if (key === 'doc_kind') return docKindLabel(value)
+  if (key === 'auto_renews') return value ? 'ja' : 'nei'
+  if (key === 'payment_frequency') return frequencyLabel(value)
+  if (key === 'valid_from' || key === 'valid_to' || key === 'payment_anchor') return formatDate(value)
+  if (key === 'annual_premium' || key === 'fee_per_payment') return formatMoney(value)
   return String(value)
 }
 

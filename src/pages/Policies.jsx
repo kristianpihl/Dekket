@@ -2,26 +2,12 @@ import { useState } from 'react'
 import { Alert, Button, Table } from 'react-bootstrap'
 import { Link, useSearchParams } from 'react-router-dom'
 import EditPolicyModal from '../components/EditPolicyModal'
+import EndDateCell from '../components/EndDateCell'
 import { docKindLabel, holderLabel, insuranceTypeLabel, payerLabel } from '../content/insuranceTypes'
-import { formatDate, formatMoney } from '../lib/format'
+import { formatMoney } from '../lib/format'
 import { features } from '../content/site'
-import { daysUntil, policyStatus } from '../lib/overview'
 import { deletePolicy, openPolicyFile } from '../lib/policyActions'
 import { usePolicies } from '../lib/usePolicies'
-
-// The "end date" cell: the date, plus a small pill when it needs attention.
-function EndDate({ policy }) {
-  const status = policyStatus(policy)
-  if (status === 'no-date') return <span className="text-muted">–</span>
-  const days = daysUntil(policy.valid_to)
-  return (
-    <>
-      {formatDate(policy.valid_to)}
-      {status === 'expired' && <span className="pill pill--warn ms-2">Utløpt</span>}
-      {status === 'soon' && <span className="pill pill--warn ms-2">Om {days} {days === 1 ? 'dag' : 'dager'}</span>}
-    </>
-  )
-}
 
 // "Mine forsikringer" — a table of everything the user has added.
 // The edit dialog is driven by the URL (?rediger=<id>) so the dashboard can link straight to it.
@@ -83,7 +69,7 @@ export default function Policies() {
                 <th className="d-none d-sm-table-cell">Type</th>
                 <th className="d-none d-lg-table-cell">Tegnet via</th>
                 <th className="d-none d-md-table-cell">Betaler</th>
-                <th>Gyldig til</th>
+                <th>Gyldig til / fornyes</th>
                 <th className="d-none d-md-table-cell text-end">Pris per år</th>
                 <th aria-label="Handlinger" />
               </tr>
@@ -109,7 +95,7 @@ export default function Policies() {
                     )}
                   </td>
                   <td>
-                    <EndDate policy={p} />
+                    <EndDateCell policy={p} />
                   </td>
                   <td className="d-none d-md-table-cell text-end">
                     {p.annual_premium != null ? formatMoney(p.annual_premium) : <span className="text-muted">–</span>}

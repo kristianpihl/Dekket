@@ -1,5 +1,6 @@
 import { Col, Form, InputGroup, Row } from 'react-bootstrap'
 import { docKinds, holders, insuranceDocKinds, insuranceTypes, payers } from '../content/insuranceTypes'
+import { FREQUENCIES } from '../lib/payments'
 
 // The form fields that describe a policy. Used in the "add" flow and the "edit" dialog.
 // `values` is the form state (see lib/policyFields.js); `onChange(patch)` merges changes into it.
@@ -137,6 +138,21 @@ export default function PolicyFields({
         </Col>
       </Row>
 
+      <Form.Check
+        id={id('autorenews')}
+        type="switch"
+        className="mb-3"
+        checked={values.autoRenews}
+        onChange={(e) => onChange({ autoRenews: e.target.checked })}
+        label="Fornyes automatisk hvert år"
+      />
+      {values.autoRenews && values.validTo && (
+        <Form.Text muted className="d-block mb-3 mt-n2">
+          Da regner Dekket selv ut neste fornyelse, og forsikringen regnes ikke som utløpt. Skru av hvis den er sagt opp
+          eller slutter på datoen.
+        </Form.Text>
+      )}
+
       <Form.Group className="mb-3" controlId={id('premium')}>
         <Form.Label>Pris (valgfritt)</Form.Label>
         <InputGroup>
@@ -158,7 +174,52 @@ export default function PolicyFields({
             <option value="month">per måned</option>
           </Form.Select>
         </InputGroup>
+        <Form.Text muted>Prisen på forsikringen alene, uten fakturagebyr.</Form.Text>
       </Form.Group>
+
+      <fieldset className="pay-fieldset">
+        <legend>Betaling (valgfritt)</legend>
+        <Row>
+          <Col sm={6}>
+            <Form.Group className="mb-3" controlId={id('freq')}>
+              <Form.Label>Hvor ofte betaler du?</Form.Label>
+              <Form.Select value={values.payFreq} onChange={(e) => onChange({ payFreq: e.target.value })}>
+                <option value="">Ikke oppgitt</option>
+                {FREQUENCIES.map((f) => (
+                  <option key={f.value} value={f.value}>
+                    {f.label}
+                  </option>
+                ))}
+              </Form.Select>
+            </Form.Group>
+          </Col>
+          <Col sm={6}>
+            <Form.Group className="mb-3" controlId={id('anchor')}>
+              <Form.Label>En betalingsdato</Form.Label>
+              <Form.Control
+                type="date"
+                value={values.payAnchor}
+                onChange={(e) => onChange({ payAnchor: e.target.value })}
+              />
+              <Form.Text muted>Siste eller neste trekk. De andre regnes ut.</Form.Text>
+            </Form.Group>
+          </Col>
+        </Row>
+        <Form.Group className="mb-1" controlId={id('fee')}>
+          <Form.Label>Gebyr per faktura</Form.Label>
+          <InputGroup>
+            <Form.Control
+              type="text"
+              inputMode="decimal"
+              placeholder="F.eks. 29"
+              value={values.fee}
+              onChange={(e) => onChange({ fee: e.target.value })}
+            />
+            <InputGroup.Text>kr</InputGroup.Text>
+          </InputGroup>
+          <Form.Text muted>Fakturagebyr eller termingebyr. Skriv 0 hvis det ikke er noe.</Form.Text>
+        </Form.Group>
+      </fieldset>
     </>
   )
 }

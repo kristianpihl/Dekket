@@ -22,12 +22,12 @@ export default function RenewalList({ renewals }) {
 
   return (
     <ul className="rows">
-      {renewals.map(({ policy, days, status }) => (
+      {renewals.map(({ policy, date, renews, days, status }) => (
         <li key={policy.id} className="rows-item">
           <div className="rows-main">
             <div className="rows-title">{policy.title}</div>
             <div className="rows-note">
-              {formatDate(policy.valid_to)} · {holderLabel(policy.holder)}
+              {renews ? 'Fornyes' : 'Utløper'} {formatDate(date)} · {holderLabel(policy.holder)}
             </div>
           </div>
           <span className={`pill ${status === 'ok' ? 'pill--none' : 'pill--warn'}`}>{daysText(days)}</span>
