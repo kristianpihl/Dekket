@@ -53,7 +53,7 @@ export default function PolicyList({ policies, onChanged }) {
   }
 
   if (policies.length === 0) {
-    return <p>Du har ikke lastet opp noen forsikringer ennå.</p>
+    return <p className="text-muted">Du har ikke lastet opp noen dokumenter ennå.</p>
   }
 
   return (

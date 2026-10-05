@@ -1,14 +1,17 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Alert } from 'react-bootstrap'
-import { useAuth } from '../components/AuthProvider'
+import AreaGrid from '../components/AreaGrid'
+import CoverageSummary from '../components/CoverageSummary'
 import PolicyList from '../components/PolicyList'
+import TodoList from '../components/TodoList'
+import { sampleAreas, sampleTodos } from '../content/sampleOverview'
 import UploadPolicyForm from '../forms/UploadPolicyForm'
 import { supabase } from '../lib/supabaseClient'
 
-// Logged-in only (guarded in routes.jsx). Shows the user's uploaded insurance
-// documents and the upload form.
+// Logged-in only (guarded in routes.jsx).
+// Left/top: the coverage overview (example data for now). Right/bottom: the user's
+// real uploaded documents and the upload form.
 export default function Dashboard() {
-  const { user } = useAuth()
   const [policies, setPolicies] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -36,17 +39,55 @@ export default function Dashboard() {
     load()
   }, [load])
 
+  const toCheck = sampleAreas.filter((a) => a.status === 'check').length
+
   return (
-    <section>
-      <h1>Dine forsikringer</h1>
-      <p className="text-muted">Innlogget som {user.email}</p>
+    <>
+      <section className="dash-hero">
+        <h1>Slik står det til med dekningen din</h1>
+        <p className="dash-sub">
+          {loading
+            ? 'Henter dokumentene dine …'
+            : `Du har lastet opp ${policies.length} ${policies.length === 1 ? 'dokument' : 'dokumenter'}. ${toCheck} ting er verdt å sjekke.`}
+        </p>
+        <a href="#last-opp" className="cta">
+          <i className="bi bi-upload me-2" aria-hidden="true" />
+          Last opp dokument
+        </a>
+      </section>
 
-      {error && <Alert variant="warning">{error}</Alert>}
+      <div className="dash-grid">
+        <div className="dash-main">
+          <div className="sample-note">
+            Eksempeldata: dekningsoversikten er et utkast til designet. Analysen kommer senere.
+            Dokumentene og opplastingen er ekte.
+          </div>
 
-      {loading ? <p>Laster …</p> : <PolicyList policies={policies} onChanged={load} />}
+          <CoverageSummary areas={sampleAreas} documentCount={policies.length} />
 
-      <hr />
-      <UploadPolicyForm onUploaded={load} />
-    </section>
+          <section>
+            <h2 className="section-title">Dine områder</h2>
+            <AreaGrid areas={sampleAreas} />
+          </section>
+
+          <section>
+            <h2 className="section-title">Dette bør du gjøre</h2>
+            <TodoList todos={sampleTodos} />
+          </section>
+        </div>
+
+        <aside className="dash-side">
+          <section>
+            <h2 className="section-title">Dokumenter</h2>
+            {error && <Alert variant="warning">{error}</Alert>}
+            {loading ? <p>Laster …</p> : <PolicyList policies={policies} onChanged={load} />}
+          </section>
+
+          <section id="last-opp" className="card-box upload-card">
+            <UploadPolicyForm onUploaded={load} />
+          </section>
+        </aside>
+      </div>
+    </>
   )
 }

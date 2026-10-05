@@ -17,6 +17,7 @@ export default function Topbar() {
               {link.label}
             </Link>
           ))}
+        {user && <span className="topbar-user">{user.email}</span>}
         {user ? (
           <button type="button" className="link-button" onClick={() => signOut()}>
             Logg ut

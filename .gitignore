@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Real insurance documents used for testing — personal data, never commit
+test-data/
+
 # Environment variables (Supabase keys etc.) — never commit these
 .env
 .env.*
