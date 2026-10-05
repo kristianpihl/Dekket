@@ -1,4 +1,7 @@
+import { Link } from 'react-router-dom'
+
 // "Dette bør du gjøre" — short list of suggested next steps.
+// Each todo may have an `action` { label, to } that links to a page in the app.
 export default function TodoList({ todos }) {
   return (
     <div className="todos">
@@ -12,9 +15,9 @@ export default function TodoList({ todos }) {
             <div className="todo-note">{todo.note}</div>
           </div>
           {todo.action && (
-            <a href={todo.action.href} className="btn btn-outline-primary btn-sm">
+            <Link to={todo.action.to} className="btn btn-outline-primary btn-sm">
               {todo.action.label}
-            </a>
+            </Link>
           )}
         </div>
       ))}

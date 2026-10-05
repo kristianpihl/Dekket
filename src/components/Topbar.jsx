@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { site } from '../content/site'
 import { useAuth } from './AuthProvider'
 
+// Top bar for the public pages (front page, login). Inside the app the sidebar is used instead.
 export default function Topbar() {
   const { user, loading, signOut } = useAuth()
 
@@ -11,17 +12,13 @@ export default function Topbar() {
         {site.name}
       </Link>
       <nav className="topbar-nav">
-        {user &&
-          site.navLinks.map((link) => (
-            <Link key={link.to} to={link.to}>
-              {link.label}
-            </Link>
-          ))}
-        {user && <span className="topbar-user">{user.email}</span>}
         {user ? (
-          <button type="button" className="link-button" onClick={() => signOut()}>
-            Logg ut
-          </button>
+          <>
+            <Link to="/dashboard">Åpne appen</Link>
+            <button type="button" className="link-button" onClick={() => signOut()}>
+              Logg ut
+            </button>
+          </>
         ) : (
           !loading && <Link to="/login">Logg inn</Link>
         )}

@@ -24,11 +24,17 @@ npm run dev
 
 ## Prosjektstruktur
 
-- `src/pages/` — én fil per side
-- `src/components/` — gjenbrukbare UI-deler (Topbar, Footer, …)
+- `src/pages/` — én fil per side (Dashboard, AddPolicy, Policies, Analysis, …)
+- `src/components/` — gjenbrukbare UI-deler (AppLayout med sidepanel, SidebarNav, …)
+- `src/forms/` — skjemaer (UploadPolicyForm = veiviseren for å legge til forsikring)
 - `src/content/` — tekst/innhold som ikke ligger i databasen
-- `src/lib/supabaseClient.js` — Supabase-klienten
+  (`site.js` har menyen i sidepanelet: `appNav`)
+- `src/lib/` — Supabase-klient, `usePolicies`, `policyActions`, små hjelpere
 - `src/routes.jsx` — alle sider/URL-er
+- `supabase/` — SQL som kjøres i Supabase SQL Editor
+
+**Slik legger du til en ny side i appen:** lag filen i `src/pages/`, legg til en
+`<Route>` i `src/routes.jsx`, og en linje i `appNav` i `src/content/site.js`.
 - `api/` — Vercel serverless-funksjoner (backend-logikk, kommer senere)
 
 ## Status

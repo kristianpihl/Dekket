@@ -15,9 +15,9 @@ export const sampleAreas = [
   { id: 'car', name: 'Bil', icon: 'car-front', status: 'none', label: 'Mangler', note: 'Ingen dokument ennå' },
 ]
 
-// action: null = no button yet. href '#last-opp' scrolls to the upload card.
+// action: null = no button yet. `to` is a page in the app.
 export const sampleTodos = [
-  { id: 'renew', icon: 'calendar-event', title: 'Sjekk om innboforsikringen er fornyet', note: 'Dokumentet gjelder til 30.06.2025.', action: { label: 'Last opp ny', href: '#last-opp' } },
-  { id: 'travel-proof', icon: 'file-earmark-plus', title: 'Legg til forsikringsbeviset for reise', note: 'Da kan vi si hva du faktisk har dekning for.', action: { label: 'Last opp', href: '#last-opp' } },
+  { id: 'renew', icon: 'calendar-event', title: 'Sjekk om innboforsikringen er fornyet', note: 'Dokumentet gjelder til 30.06.2025.', action: { label: 'Last opp ny', to: '/legg-til' } },
+  { id: 'travel-proof', icon: 'file-earmark-plus', title: 'Legg til forsikringsbeviset for reise', note: 'Da kan vi si hva du faktisk har dekning for.', action: { label: 'Last opp', to: '/legg-til' } },
   { id: 'building', icon: 'building', title: 'Be sameiet om bygningsforsikringen', note: 'Sameiet har trolig en felles forsikring for bygget.', action: null },
 ]
