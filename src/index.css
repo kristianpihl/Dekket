@@ -1558,3 +1558,75 @@ html {
   font-size: 0.88rem;
   color: var(--color-muted);
 }
+
+/* ==========================================================================
+   Økonomi
+   ========================================================================== */
+.econ-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.econ-card-title {
+  color: var(--color-muted);
+  font-size: 0.88rem;
+  margin-bottom: 0.3rem;
+}
+
+.econ-num {
+  font-family: var(--font-heading);
+  font-size: 2.1rem;
+  line-height: 1.1;
+}
+
+.econ-card--muted {
+  background: transparent;
+  border-style: dashed;
+}
+
+.econ-card--muted .econ-num {
+  color: var(--color-muted);
+}
+
+.econ-card-note {
+  margin-top: 0.4rem;
+  color: var(--color-muted);
+  font-size: 0.82rem;
+}
+
+.econ-expired td {
+  color: var(--color-muted);
+}
+
+.econ-expired .fw-medium {
+  text-decoration: line-through;
+}
+
+.econ-table tfoot td {
+  border-top: 1px solid var(--color-border);
+  padding-top: 0.7rem;
+  padding-bottom: 0.7rem;
+}
+
+.econ-total-label {
+  font-weight: 500;
+}
+
+.econ-grand td {
+  font-weight: 500;
+  border-top: 2px solid var(--color-primary);
+}
+
+.econ-notes {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0;
+  color: var(--color-muted);
+  font-size: 0.9rem;
+}
+
+.econ-notes li + li {
+  margin-top: 0.5rem;
+}

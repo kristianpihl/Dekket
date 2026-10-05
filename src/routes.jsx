@@ -9,6 +9,7 @@ import Analysis from './pages/Analysis'
 import AnalysisDetail from './pages/AnalysisDetail'
 import Dashboard from './pages/Dashboard'
 import Documents from './pages/Documents'
+import Economy from './pages/Economy'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import NotFound from './pages/NotFound'
@@ -41,6 +42,7 @@ export default function AppRoutes() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/legg-til" element={<AddPolicy />} />
         <Route path="/forsikringer" element={<Policies />} />
+        <Route path="/okonomi" element={<Economy />} />
         <Route path="/dokumenter" element={<Documents />} />
         <Route path="/selskaper" element={<Providers />} />
         {features.analysis && <Route path="/analyse" element={<Analysis />} />}

@@ -22,6 +22,7 @@ export const appNav = [
   { label: 'Dashboard', to: '/dashboard', icon: 'grid' },
   { label: 'Legg til forsikring', to: '/legg-til', icon: 'plus-circle' },
   { label: 'Mine forsikringer', to: '/forsikringer', icon: 'table' },
+  { label: 'Økonomi', to: '/okonomi', icon: 'wallet2' },
   { label: 'Andre dokumenter', to: '/dokumenter', icon: 'folder2-open' },
   { label: 'Selskaper', to: '/selskaper', icon: 'building' },
   { label: 'Analyse', to: '/analyse', icon: 'stars', feature: 'analysis' },

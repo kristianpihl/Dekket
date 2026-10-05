@@ -240,3 +240,48 @@ export function holderBreakdown(policies, today = new Date()) {
     })
   return [...map.values()].sort((a, b) => b.count - a.count)
 }
+
+// --- Økonomi: what the HOUSEHOLD pays ----------------------------------------------------------
+// The household = the user ("Meg selv") + a spouse/partner. Policies paid by a job, a housing association or
+// anyone else are NOT part of it. Expired policies are never counted in the totals; with
+// `includeExpired` they are still listed (greyed out) so the user can see what ended.
+// Returns the table rows plus the totals the page shows.
+const HOUSEHOLD_PAYERS = ['private', 'spouse']
+
+export function economySummary(policies, today = new Date(), { includeExpired = false } = {}) {
+  const payerOf = (p) => p.payer ?? 'private'
+  const household = policies.filter((p) => HOUSEHOLD_PAYERS.includes(payerOf(p)))
+
+  const allRows = household.map((p) => ({
+    policy: p,
+    payer: payerOf(p),
+    status: policyStatus(p, today),
+    year: p.annual_premium != null ? Number(p.annual_premium) : null,
+  }))
+  const counted = allRows.filter((r) => r.status !== 'expired')
+
+  // Biggest cost first; policies without a price last; ties by name.
+  const rows = (includeExpired ? allRows : counted).sort(
+    (a, b) => (b.year ?? -1) - (a.year ?? -1) || a.policy.title.localeCompare(b.policy.title, 'nb'),
+  )
+
+  const sum = (list) => list.reduce((total, r) => total + (r.year ?? 0), 0)
+  const part = (payer) => {
+    const year = sum(counted.filter((r) => r.payer === payer))
+    return { year, month: year / 12 }
+  }
+  const me = part('private')
+  const spouse = part('spouse')
+  const householdYear = me.year + spouse.year
+
+  return {
+    rows,
+    me,
+    spouse,
+    household: { year: householdYear, month: householdYear / 12 },
+    missingPrice: counted.filter((r) => r.year === null).length,
+    expiredCount: allRows.length - counted.length,
+    paidByOthers: policies.length - household.length,
+    hasSpouseRows: allRows.some((r) => r.payer === 'spouse'),
+  }
+}
