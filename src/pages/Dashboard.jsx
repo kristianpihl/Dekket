@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import ActivityFeed from '../components/ActivityFeed'
+import AnnouncedChanges from '../components/AnnouncedChanges'
 import AreaGrid from '../components/AreaGrid'
 import CostOverview from '../components/CostOverview'
 import CoverageSummary from '../components/CoverageSummary'
@@ -8,6 +9,7 @@ import HolderBreakdown from '../components/HolderBreakdown'
 import RenewalList from '../components/RenewalList'
 import TodoList from '../components/TodoList'
 import {
+  announcedChanges,
   attentionCount,
   buildAreas,
   buildTodos,
@@ -33,6 +35,7 @@ export default function Dashboard() {
       cost: costSummary(policies, today),
       holders: holderBreakdown(policies, today),
       attention: attentionCount(policies, today),
+      changes: announcedChanges(policies, today).upcoming,
     }
   }, [policies])
 
@@ -65,6 +68,13 @@ export default function Dashboard() {
         <section>
           <h2 className="section-title">Må følges opp</h2>
           <TodoList todos={view.todos} />
+        </section>
+      )}
+
+      {view.changes.length > 0 && (
+        <section className="card-box">
+          <h2 className="section-title">Endringer på vei</h2>
+          <AnnouncedChanges changes={view.changes} />
         </section>
       )}
 

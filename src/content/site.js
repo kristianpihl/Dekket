@@ -10,8 +10,12 @@ export const site = {
 // Features that are built but switched on/off here. Turn one on when it is ready for users.
 // analysis: the AI analysis of documents (needs ANTHROPIC_API_KEY, supabase/analysis.sql, and the
 //           AI provider named in the privacy policy — see src/pages/Privacy.jsx).
+// reminders: e-mail reminders before renewals and announced changes. Turn on ONLY when the e-mail service is
+//           set up (RESEND_API_KEY, RESEND_FROM, CRON_SECRET, SUPABASE_SERVICE_ROLE_KEY in Vercel, and
+//           supabase/versions-reminders.sql run) — otherwise users would switch on reminders that never arrive.
 export const features = {
   analysis: false,
+  reminders: false,
 }
 
 // The left-hand menu inside the app, top to bottom.

@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { Alert, Button, Form, Modal } from 'react-bootstrap'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../components/AuthProvider'
+import RemindersCard from '../components/RemindersCard'
+import { features } from '../content/site'
 import { deleteMyAccount } from '../lib/accountActions'
 import { exportMyData, saveBlob } from '../lib/exportData'
 import { formatDate } from '../lib/format'
@@ -82,6 +84,8 @@ export default function Account() {
           Les <Link to="/vilkar">vilkårene</Link> og <Link to="/personvern">personvernerklæringen</Link>.
         </p>
       </div>
+
+      {features.reminders && <RemindersCard />}
 
       <div className="card-box account-block">
         <h2 className="section-title">Last ned dataene dine</h2>

@@ -61,6 +61,13 @@ export default function Privacy() {
             ved å krysse av når du laster opp et dokument. Tidspunktet lagres sammen med dokumentet.
             Du kan trekke samtykket tilbake når som helst ved å slette dokumentet eller kontoen.
           </li>
+          {features.reminders && (
+            <li>
+              <strong>Påminnelser på e-post</strong>, hvis du slår dem på under «Konto». Vi bruker e-postadressen din
+              og navn, datoer og priser fra forsikringene dine til å minne deg på fornyelser og varslede endringer.
+              Grunnlag: avtalen med deg og ditt valg om å slå dem på. Du kan slå dem av når som helst.
+            </li>
+          )}
           <li>
             <strong>Sikkerhet og forebygging av misbruk.</strong> Grunnlag: berettiget interesse
             (art. 6 nr. 1 f).
@@ -87,6 +94,12 @@ export default function Privacy() {
             <strong>Vercel:</strong> hosting av nettsiden. Behandler tekniske opplysninger som
             IP-adresse.
           </li>
+          {features.reminders && (
+            <li>
+              <strong>Resend:</strong> sender påminnelsene på e-post. E-postadressen din og teksten i påminnelsen
+              (navn, datoer og priser, aldri innholdet i dokumentene) går via Resend. Resend er et amerikansk selskap.
+            </li>
+          )}
           {features.analysis && (
             <li>
               <strong>Anthropic (Claude):</strong> KI-modellen som leser dokumentene dine når du ber om

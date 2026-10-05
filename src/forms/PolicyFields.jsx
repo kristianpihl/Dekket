@@ -1,6 +1,7 @@
 import { Col, Form, InputGroup, Row } from 'react-bootstrap'
 import { docKinds, holders, insuranceDocKinds, insuranceTypes, payers } from '../content/insuranceTypes'
 import { FREQUENCIES } from '../lib/payments'
+import { applyAnnouncedChange } from '../lib/policyFields'
 
 // The form fields that describe a policy. Used in the "add" flow and the "edit" dialog.
 // `values` is the form state (see lib/policyFields.js); `onChange(patch)` merges changes into it.
@@ -219,6 +220,62 @@ export default function PolicyFields({
           </InputGroup>
           <Form.Text muted>Fakturagebyr eller termingebyr. Skriv 0 hvis det ikke er noe.</Form.Text>
         </Form.Group>
+      </fieldset>
+
+      <fieldset className="pay-fieldset mt-3">
+        <legend>Varslet endring (valgfritt)</legend>
+        <p className="lp-muted mb-2">
+          Har selskapet varslet at noe endres, for eksempel at prisen øker? Legg det inn, så minner Dekket deg om det.
+        </p>
+        <Row>
+          <Col sm={6}>
+            <Form.Group className="mb-3" controlId={id('nextdate')}>
+              <Form.Label>Gjelder fra</Form.Label>
+              <Form.Control
+                type="date"
+                value={values.nextDate}
+                onChange={(e) => onChange({ nextDate: e.target.value })}
+              />
+            </Form.Group>
+          </Col>
+          <Col sm={6}>
+            <Form.Group className="mb-3" controlId={id('nextpremium')}>
+              <Form.Label>Ny pris (valgfritt)</Form.Label>
+              <InputGroup>
+                <Form.Control
+                  type="text"
+                  inputMode="decimal"
+                  value={values.nextPremium}
+                  onChange={(e) => onChange({ nextPremium: e.target.value })}
+                />
+                <InputGroup.Text>kr</InputGroup.Text>
+                <Form.Select
+                  aria-label="Den nye prisen gjelder per"
+                  value={values.nextPremiumPeriod}
+                  onChange={(e) => onChange({ nextPremiumPeriod: e.target.value })}
+                  className="premium-period"
+                >
+                  <option value="year">per år</option>
+                  <option value="month">per måned</option>
+                </Form.Select>
+              </InputGroup>
+            </Form.Group>
+          </Col>
+        </Row>
+        <Form.Group className="mb-2" controlId={id('nextnote')}>
+          <Form.Label>Hva endres?</Form.Label>
+          <Form.Control
+            type="text"
+            placeholder="F.eks. Prisen øker på grunn av indeksregulering"
+            value={values.nextNote}
+            onChange={(e) => onChange({ nextNote: e.target.value })}
+          />
+        </Form.Group>
+        {(values.nextDate || values.nextPremium) && (
+          <button type="button" className="link-button" onClick={() => onChange(applyAnnouncedChange(values))}>
+            Endringen har trådt i kraft: bruk den nye prisen og fjern varselet
+          </button>
+        )}
       </fieldset>
     </>
   )

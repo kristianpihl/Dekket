@@ -16,6 +16,10 @@ export const emptyValues = {
   payFreq: '', // '' = not entered, else monthly | quarterly | semiannual | annual
   payAnchor: '', // one known payment day (the last or the next one)
   fee: '', // invoice/instalment fee per payment, in kr
+  nextDate: '', // an announced change: the date it takes effect …
+  nextPremium: '', // … the new price …
+  nextPremiumPeriod: 'year',
+  nextNote: '', // … and a note about it
 }
 
 // The database stores the price per year; show it per year when editing.
@@ -35,6 +39,10 @@ export function valuesFromPolicy(policy) {
     payFreq: policy.payment_frequency ?? '',
     payAnchor: policy.payment_anchor ?? '',
     fee: policy.fee_per_payment != null ? String(policy.fee_per_payment) : '',
+    nextDate: policy.next_change_date ?? '',
+    nextPremium: policy.next_annual_premium != null ? String(policy.next_annual_premium) : '',
+    nextPremiumPeriod: 'year',
+    nextNote: policy.next_change_note ?? '',
   }
 }
 
@@ -44,6 +52,13 @@ export function parseAmount(text) {
   if (cleaned === '') return null
   const n = Number(cleaned)
   return Number.isFinite(n) ? n : null
+}
+
+// Converts what the user typed ("97,40" per month) to a yearly amount, or null when blank.
+function yearly(text, period) {
+  if (text.trim() === '') return null
+  const amount = parseAmount(text)
+  return amount === null ? null : Math.round(amount * (period === 'month' ? 12 : 1) * 100) / 100
 }
 
 // Returns an error message, or '' when the values are fine.
@@ -57,15 +72,31 @@ export function validateValues(v, { requireKind = false } = {}) {
     const fee = parseAmount(v.fee)
     if (fee === null || fee < 0) return 'Gebyret må være et tall som ikke er negativt. Skriv 0 hvis det ikke er noe gebyr.'
   }
+  if (v.nextPremium.trim() !== '') {
+    const next = parseAmount(v.nextPremium)
+    if (next === null || next < 0) return 'Den nye prisen må være et tall som ikke er negativt.'
+    if (!v.nextDate) return 'Oppgi datoen den nye prisen gjelder fra.'
+  }
   if (v.validFrom && v.validTo && v.validTo < v.validFrom) {
     return 'Sluttdatoen kan ikke være før startdatoen.'
   }
   return ''
 }
 
+// "The announced change has taken effect": the new price becomes the price, and the announcement is cleared.
+// Returns the form values to merge in.
+export function applyAnnouncedChange(v) {
+  return {
+    premium: v.nextPremium,
+    premiumPeriod: v.nextPremiumPeriod,
+    nextDate: '',
+    nextPremium: '',
+    nextPremiumPeriod: 'year',
+    nextNote: '',
+  }
+}
+
 export function toDbFields(v) {
-  const amount = v.premium.trim() === '' ? null : parseAmount(v.premium)
-  const annual = amount === null ? null : Math.round(amount * (v.premiumPeriod === 'month' ? 12 : 1) * 100) / 100
   const fee = v.fee.trim() === '' ? null : parseAmount(v.fee)
   return {
     title: v.title.trim(),
@@ -77,9 +108,12 @@ export function toDbFields(v) {
     valid_from: v.validFrom || null,
     valid_to: v.validTo || null,
     auto_renews: v.autoRenews,
-    annual_premium: annual,
+    annual_premium: yearly(v.premium, v.premiumPeriod),
     payment_frequency: v.payFreq || null,
     payment_anchor: v.payAnchor || null,
     fee_per_payment: fee,
+    next_change_date: v.nextDate || null,
+    next_annual_premium: yearly(v.nextPremium, v.nextPremiumPeriod),
+    next_change_note: v.nextNote.trim() || null,
   }
 }

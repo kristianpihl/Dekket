@@ -33,12 +33,17 @@ npm run dev
   `overview.js` har alle beregningene bak dashboardet (status, frister, kostnader)
 - `src/routes.jsx` — alle sider/URL-er
 - `supabase/` — SQL som kjøres i Supabase SQL Editor, i denne rekkefølgen:
-  `documents.sql` → `account.sql` → `dashboard.sql` → `doc-kind.sql` → `payers-documents-providers.sql` → `payments.sql`
+  `documents.sql` → `account.sql` → `dashboard.sql` → `doc-kind.sql` → `payers-documents-providers.sql` → `payments.sql` → `versions-reminders.sql`
   (alle kan kjøres flere ganger).
   `analysis.sql` trengs først når analysen skrus på
 
 **Funksjonsbrytere:** `features` i `src/content/site.js` skrur ferdigbygde funksjoner av/på.
-Analysen (`features.analysis`) er foreløpig AV.
+Analysen (`features.analysis`) og e-postpåminnelsene (`features.reminders`) er foreløpig AV.
+
+**Påminnelser på e-post:** `api/send-reminders.js` kjører hver morgen (Vercel cron, se `vercel.json`).
+Oppsett: kjør `supabase/versions-reminders.sql`, legg inn `CRON_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`,
+`RESEND_API_KEY` og `RESEND_FROM` i Vercel, test med `/api/send-reminders?dry=1` (sender ingenting),
+og sett så `features.reminders = true`.
 
 **Slik legger du til en ny side i appen:** lag filen i `src/pages/`, legg til en
 `<Route>` i `src/routes.jsx`, og en linje i `appNav` i `src/content/site.js`.

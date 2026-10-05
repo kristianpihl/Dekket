@@ -84,6 +84,8 @@ export function buildArchiveFiles({
   docDownloads = [],
   providers = [],
   logoDownloads = [],
+  versions = [],
+  versionDownloads = [],
   now = new Date(),
 }) {
   const files = {}
@@ -102,7 +104,24 @@ export function buildArchiveFiles({
     (d) => d.file_name,
     (d) => d.title,
   )
-  const failed = [...policyFiles.failed, ...docFiles.failed]
+  // Older versions: numbered per policy, oldest = 1 (the current file is the last number, in filer/).
+  const policyById = new Map(policies.map((p) => [p.id, p]))
+  const versionNumber = new Map()
+  const perPolicy = new Map()
+  for (const v of [...versions].sort((a, b) => a.created_at.localeCompare(b.created_at))) {
+    const n = (perPolicy.get(v.policy_id) ?? 0) + 1
+    perPolicy.set(v.policy_id, n)
+    versionNumber.set(v.id, n)
+  }
+  const titleOf = (v) => policyById.get(v.policy_id)?.title ?? 'forsikring'
+  const versionFiles = placeFiles(
+    files,
+    'versjoner',
+    versionDownloads.map(({ version, bytes }) => ({ item: { ...version, file_name: `${titleOf(version)} - versjon ${versionNumber.get(version.id)} - ${version.file_name}` }, bytes })),
+    (v) => v.file_name,
+    (v) => `${titleOf(v)} (versjon ${versionNumber.get(v.id)})`,
+  )
+  const failed = [...policyFiles.failed, ...docFiles.failed, ...versionFiles.failed]
 
   // --- insurance policies
   const policyRows = policies.map((p) => ({
@@ -229,6 +248,26 @@ export function buildArchiveFiles({
     )
   }
 
+  if (versions.length > 0) {
+    files['versjoner.json'] = json(
+      versions.map((v) => ({
+        policy_id: v.policy_id,
+        policy_title: titleOf(v),
+        version_number: versionNumber.get(v.id),
+        archived_at: v.created_at,
+        file_added_at: v.added_at ?? null,
+        note: v.note ?? null,
+        original_file_name: v.file_name,
+        file_in_archive: versionFiles.names.get(v.id) ?? null,
+        insurer: v.insurer ?? null,
+        valid_from: v.valid_from ?? null,
+        valid_to: v.valid_to ?? null,
+        annual_premium_nok: v.annual_premium ?? null,
+        fee_per_payment_nok: v.fee_per_payment ?? null,
+      })),
+    )
+  }
+
   files['kontoopplysninger.json'] = json({
     email: user.email,
     user_id: user.id,
@@ -261,6 +300,12 @@ export function buildArchiveFiles({
       ? [
           '  forsikringsselskaper.csv/.json  Selskapene dine med kontaktopplysninger og lenker',
           '  logoer/                      Logoene du har lastet opp',
+        ]
+      : []),
+    ...(versions.length > 0
+      ? [
+          '  versjoner.json               Eldre versjoner av forsikringsdokumentene, med pris og datoer den gangen',
+          '  versjoner/                   Filene til de eldre versjonene',
         ]
       : []),
     '  aktivitet.json               Loggen over det som er lagt til, endret og slettet',

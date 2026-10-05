@@ -3,11 +3,13 @@ import { Alert, Button, Table } from 'react-bootstrap'
 import { Link, useSearchParams } from 'react-router-dom'
 import EditPolicyModal from '../components/EditPolicyModal'
 import EndDateCell from '../components/EndDateCell'
+import VersionsModal from '../components/VersionsModal'
 import { docKindLabel, holderLabel, insuranceTypeLabel, payerLabel } from '../content/insuranceTypes'
 import { formatMoney } from '../lib/format'
 import { features } from '../content/site'
 import { deletePolicy, openPolicyFile } from '../lib/policyActions'
 import { usePolicies } from '../lib/usePolicies'
+import { useVersions } from '../lib/useVersions'
 
 // "Mine forsikringer" — a table of everything the user has added.
 // The edit dialog is driven by the URL (?rediger=<id>) so the dashboard can link straight to it.
@@ -16,8 +18,11 @@ export default function Policies() {
   const [searchParams, setSearchParams] = useSearchParams()
   const [error, setError] = useState('')
   const [busyId, setBusyId] = useState(null)
+  const { byPolicy, reload: reloadVersions } = useVersions()
+  const [versionsForId, setVersionsForId] = useState(null) // the policy whose version history is open
 
   const editing = policies.find((p) => p.id === searchParams.get('rediger')) ?? null
+  const versionsPolicy = policies.find((p) => p.id === versionsForId) ?? null
 
   async function handleOpen(policy) {
     setError('')
@@ -28,7 +33,7 @@ export default function Policies() {
     if (!window.confirm(`Slette «${policy.title}»? Filen fjernes for godt.`)) return
     setError('')
     setBusyId(policy.id)
-    const message = await deletePolicy(policy)
+    const message = await deletePolicy(policy, byPolicy.get(policy.id) ?? [])
     setBusyId(null)
     setError(message)
     if (!message) reload()
@@ -114,6 +119,9 @@ export default function Policies() {
                     <Button size="sm" variant="outline-primary" onClick={() => setSearchParams({ rediger: p.id })}>
                       Rediger
                     </Button>{' '}
+                    <Button size="sm" variant="outline-primary" onClick={() => setVersionsForId(p.id)}>
+                      Versjoner{(byPolicy.get(p.id)?.length ?? 0) > 0 ? ` (${byPolicy.get(p.id).length + 1})` : ''}
+                    </Button>{' '}
                     <Button
                       size="sm"
                       variant="outline-danger"
@@ -128,6 +136,19 @@ export default function Policies() {
             </tbody>
           </Table>
         </div>
+      )}
+
+      {versionsPolicy && (
+        <VersionsModal
+          key={versionsPolicy.id}
+          policy={versionsPolicy}
+          versions={byPolicy.get(versionsPolicy.id) ?? []}
+          onClose={() => setVersionsForId(null)}
+          onChanged={() => {
+            reload()
+            reloadVersions()
+          }}
+        />
       )}
 
       {editing && (

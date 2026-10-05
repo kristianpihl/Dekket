@@ -39,8 +39,9 @@ export async function exportMyData(user, onProgress = () => {}) {
   const analyses = await readOptional('analyses')
   const documents = await readOptional('documents')
   const providers = await readOptional('providers')
+  const versions = await readOptional('policy_versions')
 
-  const total = policies.length + documents.length + providers.filter((p) => p.logo_path).length
+  const total = policies.length + documents.length + versions.length + providers.filter((p) => p.logo_path).length
   let done = 0
   const step = () => onProgress(`Henter fil ${++done} av ${total} …`)
 
@@ -53,6 +54,11 @@ export async function exportMyData(user, onProgress = () => {}) {
   for (const doc of documents) {
     step()
     docDownloads.push({ document: doc, bytes: await fetchBytes(POLICY_BUCKET, doc.file_path) })
+  }
+  const versionDownloads = []
+  for (const version of versions) {
+    step()
+    versionDownloads.push({ version, bytes: await fetchBytes(POLICY_BUCKET, version.file_path) })
   }
   const logoDownloads = []
   for (const provider of providers) {
@@ -72,6 +78,8 @@ export async function exportMyData(user, onProgress = () => {}) {
     docDownloads,
     providers,
     logoDownloads,
+    versions,
+    versionDownloads,
   })
   const zipped = zipSync(files, { level: 1 }) // PDFs are already compressed, so a light level is plenty
 
@@ -80,7 +88,7 @@ export async function exportMyData(user, onProgress = () => {}) {
     blob: new Blob([zipped], { type: 'application/zip' }),
     filename: `dekket-mine-data-${today}.zip`,
     failed,
-    fileCount: Object.keys(files).filter((f) => /^(filer|dokumenter|logoer)\//.test(f)).length,
+    fileCount: Object.keys(files).filter((f) => /^(filer|dokumenter|versjoner|logoer)\//.test(f)).length,
   }
 }
 

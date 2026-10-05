@@ -25,10 +25,12 @@ export async function openPolicyFile(policy) {
   return ''
 }
 
-// Removes the file first, then the database row (so we never keep a row pointing at nothing).
+// Removes the files first (the current one AND any older versions, `versions`), then the database row
+// (so we never keep a row pointing at nothing). The history rows go with the policy automatically.
 // Returns an error message, or '' when it worked.
-export async function deletePolicy(policy) {
-  const { error: fileError } = await supabase.storage.from(POLICY_BUCKET).remove([policy.file_path])
+export async function deletePolicy(policy, versions = []) {
+  const paths = [policy.file_path, ...versions.map((v) => v.file_path)]
+  const { error: fileError } = await supabase.storage.from(POLICY_BUCKET).remove(paths)
   if (fileError) {
     console.error(fileError)
     return 'Kunne ikke slette filen. Prøv igjen.'

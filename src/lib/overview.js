@@ -169,6 +169,17 @@ export function buildTodos(policies, today = new Date()) {
       })
     })
 
+  // An announced change whose date has passed: the price is probably out of date.
+  announcedChanges(policies, today).due.forEach(({ policy, date }) =>
+    todos.push({
+      id: `change-due-${policy.id}`,
+      icon: 'arrow-repeat',
+      title: `Varslet endring for «${policy.title}» har trådt i kraft`,
+      note: `Den gjaldt fra ${formatDate(date)}. Oppdater prisen, og fjern varselet.`,
+      action: { label: 'Oppdater', to: `/forsikringer?rediger=${policy.id}` },
+    }),
+  )
+
   missingDocuments(policies).forEach((m) => {
     const area = m.label.toLowerCase()
     todos.push(
@@ -372,4 +383,31 @@ export function paymentSchedule(policies, today = new Date()) {
     upcoming: items.filter((i) => i.next).sort(byNext),
     incomplete: items.filter((i) => !i.next),
   }
+}
+
+// --- Announced changes: "from 1 January the price rises to …" -------------------------------------
+// The user records a change the insurer has announced (a date, optionally a new yearly price and a note).
+// `upcoming` = still ahead (or today); `due` = the date has passed but the entry is still there, which means
+// the user has not yet updated the price — the dashboard asks them to.
+// `delta` is the change in the yearly premium (negative = cheaper); null when either price is unknown.
+export function announcedChanges(policies, today = new Date()) {
+  const rows = policies
+    .filter((p) => p.next_change_date)
+    .map((p) => {
+      const days = daysUntil(p.next_change_date, today)
+      const from = p.annual_premium != null ? Number(p.annual_premium) : null
+      const to = p.next_annual_premium != null ? Number(p.next_annual_premium) : null
+      return {
+        policy: p,
+        date: p.next_change_date,
+        days,
+        note: p.next_change_note ?? null,
+        from,
+        to,
+        delta: from !== null && to !== null ? to - from : null,
+      }
+    })
+    .sort((a, b) => a.date.localeCompare(b.date))
+
+  return { upcoming: rows.filter((r) => r.days >= 0), due: rows.filter((r) => r.days < 0) }
 }
