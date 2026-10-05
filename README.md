@@ -34,8 +34,9 @@ npm run dev
 ## Status
 
 - [x] Steg 0: Prosjektskjelett (Vite+React+Router, tom forside + dashboard)
-- [ ] Steg 1: Supabase-prosjekt opprettet + innlogging (e-post/passord)
-- [ ] Steg 2: Opplasting av forsikringsdokumenter (Supabase Storage)
-- [ ] Steg 3: Liste over opplastede forsikringer i dashboard
+- [x] Steg 1: Supabase-prosjekt opprettet + innlogging (e-post/passord)
+- [x] Steg 2: Opplasting av forsikringsdokumenter (privat Supabase Storage-bøtte) —
+      krever at `supabase/documents.sql` kjøres i Supabase SQL Editor
+- [x] Steg 3: Liste over opplastede forsikringer i dashboard (åpne + slett)
 - [ ] Steg 4: Første AI-analyse av et dokument
 - [ ] Steg 5: Visning av analyseresultat i UI
