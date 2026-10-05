@@ -2,11 +2,12 @@ import { useRef, useState } from 'react'
 import { Alert, Button, Form } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../components/AuthProvider'
-import { insuranceTypes } from '../content/insuranceTypes'
 import { LEGAL_VERSION } from '../content/legal'
 import { formatBytes } from '../lib/format'
 import { POLICY_BUCKET } from '../lib/policyActions'
+import { emptyValues, toDbFields, validateValues } from '../lib/policyFields'
 import { supabase } from '../lib/supabaseClient'
+import PolicyFields from './PolicyFields'
 
 const MAX_BYTES = 10 * 1024 * 1024 // must match the bucket limit in supabase/documents.sql
 const ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/png']
@@ -22,12 +23,12 @@ export default function UploadPolicyForm({ onUploaded }) {
   const fileInput = useRef(null)
   const [step, setStep] = useState(1)
   const [file, setFile] = useState(null)
-  const [title, setTitle] = useState('')
-  const [type, setType] = useState('home')
-  const [insurer, setInsurer] = useState('')
+  const [values, setValues] = useState(emptyValues)
   const [consent, setConsent] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+
+  const patch = (changes) => setValues((v) => ({ ...v, ...changes }))
 
   function handleFileChange(e) {
     const picked = e.target.files[0] ?? null
@@ -54,12 +55,17 @@ export default function UploadPolicyForm({ onUploaded }) {
       return
     }
     setError('')
-    if (!title) setTitle(withoutExtension(file.name))
+    if (!values.title) patch({ title: withoutExtension(file.name) })
     setStep(2)
   }
 
   async function handleSubmit(e) {
     e.preventDefault()
+    const problem = validateValues(values)
+    if (problem) {
+      setError(problem)
+      return
+    }
     setBusy(true)
     setError('')
 
@@ -79,10 +85,9 @@ export default function UploadPolicyForm({ onUploaded }) {
       return
     }
 
+    const fields = toDbFields({ ...values, title: values.title.trim() || withoutExtension(file.name) })
     const { error: insertError } = await supabase.from('policies').insert({
-      title: title.trim() || withoutExtension(file.name),
-      insurance_type: type,
-      insurer: insurer.trim() || null,
+      ...fields,
       file_path: path,
       file_name: file.name,
       file_size: file.size,
@@ -96,7 +101,7 @@ export default function UploadPolicyForm({ onUploaded }) {
       // Don't leave an orphaned file behind if the database row failed.
       await supabase.storage.from(POLICY_BUCKET).remove([path])
       setBusy(false)
-      setError('Kunne ikke lagre forsikringen. Prøv igjen.')
+      setError('Kunne ikke lagre forsikringen. Har du kjørt supabase/dashboard.sql? Prøv igjen.')
       console.error(insertError)
       return
     }
@@ -108,10 +113,8 @@ export default function UploadPolicyForm({ onUploaded }) {
 
   function startOver() {
     setFile(null)
-    setTitle('')
-    setInsurer('')
+    setValues(emptyValues)
     setConsent(false)
-    setType('home')
     setError('')
     setStep(1)
   }
@@ -162,37 +165,12 @@ export default function UploadPolicyForm({ onUploaded }) {
       {step === 2 && (
         <Form onSubmit={handleSubmit}>
           <h2>Fortell oss litt om den</h2>
+          <p className="text-muted">
+            Det eneste som må fylles ut er navnet. Datoer og pris gir deg en bedre oversikt, og du
+            kan legge dem inn senere.
+          </p>
 
-          <Form.Group className="mb-3" controlId="policy-title">
-            <Form.Label>Navn</Form.Label>
-            <Form.Control
-              type="text"
-              placeholder="F.eks. Innboforsikring 2026"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            />
-          </Form.Group>
-
-          <Form.Group className="mb-3" controlId="policy-type">
-            <Form.Label>Type forsikring</Form.Label>
-            <Form.Select value={type} onChange={(e) => setType(e.target.value)}>
-              {insuranceTypes.map((t) => (
-                <option key={t.value} value={t.value}>
-                  {t.label}
-                </option>
-              ))}
-            </Form.Select>
-          </Form.Group>
-
-          <Form.Group className="mb-4" controlId="policy-insurer">
-            <Form.Label>Forsikringsselskap (valgfritt)</Form.Label>
-            <Form.Control
-              type="text"
-              placeholder="F.eks. If, Gjensidige, Tryg"
-              value={insurer}
-              onChange={(e) => setInsurer(e.target.value)}
-            />
-          </Form.Group>
+          <PolicyFields values={values} onChange={patch} idPrefix="add" />
 
           <Form.Check
             id="policy-consent"

@@ -1,16 +1,36 @@
 import { useState } from 'react'
 import { Alert, Button, Table } from 'react-bootstrap'
-import { Link } from 'react-router-dom'
-import { insuranceTypeLabel } from '../content/insuranceTypes'
-import { formatBytes, formatDate } from '../lib/format'
+import { Link, useSearchParams } from 'react-router-dom'
+import EditPolicyModal from '../components/EditPolicyModal'
+import { holderLabel, insuranceTypeLabel } from '../content/insuranceTypes'
+import { formatDate, formatMoney } from '../lib/format'
+import { daysUntil, policyStatus } from '../lib/overview'
 import { deletePolicy, openPolicyFile } from '../lib/policyActions'
 import { usePolicies } from '../lib/usePolicies'
 
+// The "end date" cell: the date, plus a small pill when it needs attention.
+function EndDate({ policy }) {
+  const status = policyStatus(policy)
+  if (status === 'no-date') return <span className="text-muted">–</span>
+  const days = daysUntil(policy.valid_to)
+  return (
+    <>
+      {formatDate(policy.valid_to)}
+      {status === 'expired' && <span className="pill pill--warn ms-2">Utløpt</span>}
+      {status === 'soon' && <span className="pill pill--warn ms-2">Om {days} {days === 1 ? 'dag' : 'dager'}</span>}
+    </>
+  )
+}
+
 // "Mine forsikringer" — a table of everything the user has added.
+// The edit dialog is driven by the URL (?rediger=<id>) so the dashboard can link straight to it.
 export default function Policies() {
   const { policies, loading, error: loadError, reload } = usePolicies()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [error, setError] = useState('')
   const [busyId, setBusyId] = useState(null)
+
+  const editing = policies.find((p) => p.id === searchParams.get('rediger')) ?? null
 
   async function handleOpen(policy) {
     setError('')
@@ -59,10 +79,10 @@ export default function Policies() {
             <thead>
               <tr>
                 <th>Navn</th>
-                <th>Type</th>
-                <th className="d-none d-md-table-cell">Selskap</th>
-                <th className="d-none d-md-table-cell">Størrelse</th>
-                <th className="d-none d-sm-table-cell">Lagt til</th>
+                <th className="d-none d-sm-table-cell">Type</th>
+                <th className="d-none d-lg-table-cell">Hvem</th>
+                <th>Gyldig til</th>
+                <th className="d-none d-md-table-cell text-end">Pris per år</th>
                 <th aria-label="Handlinger" />
               </tr>
             </thead>
@@ -71,15 +91,25 @@ export default function Policies() {
                 <tr key={p.id}>
                   <td>
                     <div className="fw-medium">{p.title}</div>
-                    <div className="policy-meta">{p.file_name}</div>
+                    <div className="policy-meta">
+                      {p.insurer ? `${p.insurer} · ` : ''}
+                      {p.file_name}
+                    </div>
                   </td>
-                  <td>{insuranceTypeLabel(p.insurance_type)}</td>
-                  <td className="d-none d-md-table-cell">{p.insurer || '–'}</td>
-                  <td className="d-none d-md-table-cell">{formatBytes(p.file_size)}</td>
-                  <td className="d-none d-sm-table-cell">{formatDate(p.created_at)}</td>
+                  <td className="d-none d-sm-table-cell">{insuranceTypeLabel(p.insurance_type)}</td>
+                  <td className="d-none d-lg-table-cell">{holderLabel(p.holder)}</td>
+                  <td>
+                    <EndDate policy={p} />
+                  </td>
+                  <td className="d-none d-md-table-cell text-end">
+                    {p.annual_premium != null ? formatMoney(p.annual_premium) : <span className="text-muted">–</span>}
+                  </td>
                   <td className="text-end text-nowrap">
                     <Button size="sm" variant="outline-primary" onClick={() => handleOpen(p)}>
                       Åpne
+                    </Button>{' '}
+                    <Button size="sm" variant="outline-primary" onClick={() => setSearchParams({ rediger: p.id })}>
+                      Rediger
                     </Button>{' '}
                     <Button
                       size="sm"
@@ -95,6 +125,18 @@ export default function Policies() {
             </tbody>
           </Table>
         </div>
+      )}
+
+      {editing && (
+        <EditPolicyModal
+          key={editing.id}
+          policy={editing}
+          onClose={() => setSearchParams({})}
+          onSaved={() => {
+            setSearchParams({})
+            reload()
+          }}
+        />
       )}
     </div>
   )

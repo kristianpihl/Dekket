@@ -7,7 +7,6 @@
 -- 2) A function `delete_my_account()` the logged-in user can call to delete their OWN account.
 --    The browser can't delete a user directly (that needs admin rights), so this small
 --    SECURITY DEFINER function does it — and only ever for auth.uid(), i.e. the caller.
---    Deleting the user also deletes their rows in `policies` (foreign key: on delete cascade).
 --    The FILES in storage are removed by the app before it calls this (Postgres does not
 --    allow deleting storage rows directly).
 
@@ -27,6 +26,15 @@ as $$
 begin
   if auth.uid() is null then
     raise exception 'Not signed in';
+  end if;
+
+  -- Delete the policies explicitly first (instead of relying on the cascade). If the activity
+  -- log from dashboard.sql exists, this writes "deleted" entries to it, which we then erase
+  -- together with the rest of the log, so nothing about the user is left behind.
+  delete from public.policies where user_id = auth.uid();
+
+  if to_regclass('public.policy_events') is not null then
+    execute 'delete from public.policy_events where user_id = $1' using auth.uid();
   end if;
 
   delete from auth.users where id = auth.uid();

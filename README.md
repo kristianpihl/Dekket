@@ -29,9 +29,11 @@ npm run dev
 - `src/forms/` — skjemaer (UploadPolicyForm = veiviseren for å legge til forsikring)
 - `src/content/` — tekst/innhold som ikke ligger i databasen
   (`site.js` har menyen i sidepanelet: `appNav`)
-- `src/lib/` — Supabase-klient, `usePolicies`, `policyActions`, små hjelpere
+- `src/lib/` — Supabase-klient, `usePolicies`, `policyActions`, små hjelpere.
+  `overview.js` har alle beregningene bak dashboardet (status, frister, kostnader)
 - `src/routes.jsx` — alle sider/URL-er
-- `supabase/` — SQL som kjøres i Supabase SQL Editor
+- `supabase/` — SQL som kjøres i Supabase SQL Editor, i denne rekkefølgen:
+  `documents.sql` → `account.sql` → `dashboard.sql` (alle kan kjøres flere ganger)
 
 **Slik legger du til en ny side i appen:** lag filen i `src/pages/`, legg til en
 `<Route>` i `src/routes.jsx`, og en linje i `appNav` i `src/content/site.js`.
